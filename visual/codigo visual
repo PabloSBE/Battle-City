@@ -1,0 +1,170 @@
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#define SDL_MAIN_HANDLED
+#define filas 10
+#define columnas 10
+#define tamaño 32
+
+void cargarmapa(const char *nombre, int mapa[filas][columnas]){
+    FILE *archivo = fopen(nombre, "r");
+    if (!archivo) {
+        printf("Error: no se pudo abrir el archivo %s\n", nombre);
+        return;
+    }
+
+    for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) {
+            fscanf(archivo, "%d", &mapa[i][j]);
+        }
+    }
+
+    fclose(archivo);
+}
+int main(int argc, char *argv[]){
+    //Inicializar SDL
+    if(SDL_Init(SDL_INIT_VIDEO)!=0){
+        printf("Error al inicializar SDL: %s\n",SDL_GetError);
+        return EXIT_FAILURE;
+    }
+    //Inicializar SDL_Image
+    if(!(IMG_Init(IMG_INIT_PNG)&IMG_INIT_PNG)){
+        printf("Error al inicializar SDL_Image: %s\n",IMG_GetError);
+        return EXIT_FAILURE;
+    }
+    //Crear ventana
+    SDL_Window *ventana=SDL_CreateWindow("Juego SDL",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,640,480,SDL_WINDOW_SHOWN);
+    if(ventana==NULL){
+        printf("Error al inicializar SDL_CreateWindow: %s\n",SDL_GetError);
+        return EXIT_FAILURE;
+    }   
+    //Crear render
+    SDL_Renderer *render=SDL_CreateRenderer(ventana,-1,SDL_RENDERER_ACCELERATED);
+    if(render==NULL){
+        printf("Error al inicializar SDL_CreateRenderer: %s\n",SDL_GetError);
+        return EXIT_FAILURE;
+    }
+    //IMagenes
+    SDL_Texture *imagenes[4];
+    SDL_Surface *surface0=IMG_Load("suelo.jpg");
+    SDL_Surface *surface1=IMG_Load("pared.png");
+    SDL_Surface *surface2=IMG_Load("tanque.png");
+    SDL_Surface *surface3=IMG_Load("tanque.png");
+
+    imagenes[0]=SDL_CreateTextureFromSurface(render,surface0);
+    imagenes[1]=SDL_CreateTextureFromSurface(render,surface1);
+    imagenes[2]=SDL_CreateTextureFromSurface(render,surface2);
+    imagenes[3]=SDL_CreateTextureFromSurface(render,surface3);
+
+    SDL_FreeSurface(surface0);
+    SDL_FreeSurface(surface1);
+    SDL_FreeSurface(surface2);
+    SDL_FreeSurface(surface3);
+    
+    //Cargar mapa
+    int mapa[filas][columnas];
+    cargarmapa("mapaprueba.txt",mapa);
+    //buscar al jugador
+    int j1x=0;
+    int j1y=0;
+    int j2x=0;
+    int j2y=0;
+    for(int i=0;i<filas;i++){
+        for(int j=0;j<columnas;j++){
+            if(mapa[i][j]==2){
+                j1x=i;
+                j1y=j;
+            }else if(mapa[i][j]==3){
+                j2x=i;
+                j2y=j;
+            }
+        }
+    }
+    //Evento
+    SDL_Event evento;
+    int running=1;
+    while(running){
+        while(SDL_PollEvent(&evento)){
+            if(evento.type==SDL_QUIT){
+                running=0;
+            }else if(evento.type==SDL_KEYDOWN){
+                int new1x=j1x;
+                int new1y=j1y;
+                int new2x=j2x;
+                int new2y=j2y;
+                switch (evento.key.keysym.sym){
+                case SDLK_w:
+                    new1y--;
+                    break;
+                case SDLK_a:
+                    new1x--;
+                    break;
+                case SDLK_s:
+                    new1y++;
+                    break;
+                case SDLK_d:
+                    new1x++;
+                    break;
+                case SDLK_UP:
+                    new2y--;
+                    break;
+                case SDLK_DOWN:
+                    new2y++;
+                    break;
+                case SDLK_LEFT:
+                    new2x--;
+                    break;
+                case SDLK_RIGHT:
+                    new2x++;
+                    break;
+                }
+                // Validar límites
+                if (new1x >= 0 && new1x < filas && new1y >= 0 && new1y < columnas && mapa[new1x][new1y] == 0) {
+                    // Actualizar mapa
+                    mapa[j1x][j1y] = 0;  // borrar jugador antiguo
+                    mapa[new1x][new1y] = 2; // poner jugador nuevo
+                    j1x = new1x;
+                    j1y = new1y;
+                }
+
+                if (new2x >= 0 && new2x < filas && new2y >= 0 && new2y < columnas && mapa[new2x][new2y] == 0) {
+                    mapa[j2x][j2y] = 0;
+                    mapa[new2x][new2y] = 3;
+                    j2x = new2x;
+                    j2y = new2y;
+                }
+            }
+        }
+        SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+        SDL_RenderClear(render);
+        //dibujar
+        for(int i=0;i<filas;i++){
+            for(int j=0;j<columnas;j++){
+                SDL_Rect destRect={i*tamaño,j*tamaño,tamaño,tamaño};
+                switch(mapa[i][j]){
+                    case 0:
+                        SDL_RenderCopy(render,imagenes[0],NULL,&destRect);
+                        break;
+                    case 1:
+                        SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
+                        break;
+                    case 2:
+                        SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
+                        break;
+                    case 3:
+                        SDL_RenderCopy(render,imagenes[3],NULL,&destRect);
+                        break;
+                }
+            }
+        }
+        SDL_RenderPresent(render);
+    }
+    
+    
+    SDL_DestroyWindow(ventana);
+    IMG_Quit();
+    SDL_Quit();
+    return 0;
+}
