@@ -85,6 +85,10 @@ int main(int argc, char *argv[]){
     //Evento
     SDL_Event evento;
     int running=1;
+    double angulo1=0;
+    double angulo1ob=0;
+    double angulo2=0;
+    double angulo2ob=0;
     while(running){
         while(SDL_PollEvent(&evento)){
             if(evento.type==SDL_QUIT){
@@ -97,27 +101,35 @@ int main(int argc, char *argv[]){
                 switch (evento.key.keysym.sym){
                 case SDLK_w:
                     new1y--;
+                    angulo1ob=0;
                     break;
                 case SDLK_a:
                     new1x--;
+                    angulo1ob=270;
                     break;
                 case SDLK_s:
                     new1y++;
+                    angulo1ob=180;
                     break;
                 case SDLK_d:
                     new1x++;
+                    angulo1ob=90;
                     break;
                 case SDLK_UP:
                     new2y--;
+                    angulo2ob=0;
                     break;
                 case SDLK_DOWN:
                     new2y++;
+                    angulo2ob=180;
                     break;
                 case SDLK_LEFT:
                     new2x--;
+                    angulo2ob=270;
                     break;
                 case SDLK_RIGHT:
                     new2x++;
+                    angulo2ob=90;
                     break;
                 }
                 // Validar límites
@@ -137,6 +149,25 @@ int main(int argc, char *argv[]){
                 }
             }
         }
+        // Animación suave de rotación
+        double velocidadRotacion=5; // grados por frame
+
+        if(angulo1<angulo1ob){
+            angulo1+=velocidadRotacion;
+            if(angulo1>angulo1ob)angulo1=angulo1ob;
+        }else if(angulo1>angulo1ob){
+            angulo1-=velocidadRotacion;
+            if(angulo1<angulo1ob)angulo1=angulo1ob;
+        }
+
+        if(angulo2<angulo2ob){
+            angulo2+=velocidadRotacion;
+            if(angulo2>angulo2ob)angulo2=angulo2ob;
+        }else if(angulo2>angulo2ob){
+            angulo2-=velocidadRotacion;
+            if (angulo2<angulo2ob)angulo2=angulo2ob;
+        }
+
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
         //dibujar
@@ -151,17 +182,16 @@ int main(int argc, char *argv[]){
                         SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
                         break;
                     case 2:
-                        SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
+                        SDL_RenderCopyEx(render,imagenes[2],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
                         break;
                     case 3:
-                        SDL_RenderCopy(render,imagenes[3],NULL,&destRect);
+                        SDL_RenderCopyEx(render,imagenes[3],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
                         break;
                 }
             }
         }
         SDL_RenderPresent(render);
     }
-    
     
     SDL_DestroyWindow(ventana);
     IMG_Quit();
