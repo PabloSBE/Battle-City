@@ -190,8 +190,10 @@ int main(int argc, char* args[]) {
 
                     case SDLK_f:
                         disparar(&juego, &juego.jugador1);
+                        break;
                     case SDLK_l:
                         disparar(&juego, &juego.jugador2);
+                        break;
                 }
             }
         }
@@ -268,3 +270,4 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
+
