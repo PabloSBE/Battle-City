@@ -307,7 +307,6 @@ int main(int argc, char* args[]) {
 
         actualizar_estado(&juego);
 
-        juego_terminado(&juego);
         if (juego_terminado(&juego) == 1){
             SDL_Delay(3000);
             break;
@@ -330,5 +329,6 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
+
 
 
