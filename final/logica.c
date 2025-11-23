@@ -17,7 +17,7 @@ void inicializar_juego(Juego *juego) {
                 juego->jugador1.fila = i;
                 juego->jugador1.columna = j;
                 juego->jugador1.vida = 3;
-                juego->jugador1.direccion = 1;
+                juego->jugador1.direccion = 0;
             }
 
             //Guarda la ubicacion del jugador 2 en el struct
@@ -32,6 +32,12 @@ void inicializar_juego(Juego *juego) {
     
 
 }
+
+
+void vidas(Juego *juego){
+
+}
+
 
 /* Actualiza balas, movimientos automáticos, etc */
 void actualizar_estado(Juego *juego) {
