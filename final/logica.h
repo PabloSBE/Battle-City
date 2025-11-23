@@ -29,6 +29,7 @@ typedef struct {
 
 /* ----- Manejo general ----- */
 void inicializar_juego(Juego *juego);
+void vidas(Juego *juego);
 void actualizar_estado(Juego *juego);
 
 /* ----- Movimientos ----- */
