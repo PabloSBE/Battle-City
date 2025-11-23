@@ -120,30 +120,6 @@ int** generar_mapa() {
     }
   }
 
-  /*
-  for(int i = 1; i < LARGO - 1; i++) {
-    for(int j = 1; j < ANCHO - 1; j++) {
-      if(mapa[i][j] == 0) {
-        if(mapa[i + 1][j] == 2 && mapa[i - 1][j] == 2 && mapa[i][j + 1] == 2 && mapa[i][j - 1] == 2) {
-          printf("Bloqueado [%d][%d]\n", i, j);
-
-          if(i - 1 != 0)
-            mapa[i - 1][j] = 0;
-
-          else if(i + 1 != LARGO)
-            mapa[i + 1][j] = 0;
-
-          else if(j - 1 != 0)
-            mapa[i][j - 1] = 0;
-
-          else if(j + 1 != ANCHO)
-            mapa[i][j + 1] = 0; 
-        }
-      }
-    }
-  }
-  */
-
   return mapa;
 }
 
@@ -171,6 +147,18 @@ void colocar_tanques(int **mapa) {
   }
 }
 
+void colocar_vidas(int **mapa) {
+  for(int i = 0; i < 3; i++) {
+    int x = (rand() % (13 - 1 + 0) + 0);
+    int y = (rand() % (13 - 1 + 0) + 0);
+
+    // printf("%d, %d \n", x, y);
+  
+    if(mapa[x][y] != 2 && mapa[x][y] != 3 && mapa[x][y] != 4)
+      mapa[x][y] = 5;
+  }
+}
+
 int main() {
 
   int **mapa;
@@ -191,6 +179,7 @@ int main() {
 
     if(conectados(mapa)) {
       colocar_tanques(mapa);
+      colocar_vidas(mapa);
       break;
     }
 
