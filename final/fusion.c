@@ -42,11 +42,15 @@ int main(int argc, char* args[]) {
     //Cargar imagenes
 
     SDL_Texture *imagenes[9];
+
+    //Mapa
     SDL_Surface *surface0=IMG_Load("suelo.jpg");
     SDL_Surface *surface1=IMG_Load("pared.jpg");
     SDL_Surface *surface2=IMG_Load("irrompible.jpg");
-    SDL_Surface *surface3=IMG_Load("tanque.png");
-    SDL_Surface *surface4=IMG_Load("tanque.png");
+
+    //Entidades
+    SDL_Surface *surface3=IMG_Load("tanque1.png");
+    SDL_Surface *surface4=IMG_Load("tanque2.png");
     SDL_Surface *surface5=IMG_Load("balaup.png");
     SDL_Surface *surface6=IMG_Load("balaright.png");
     SDL_Surface *surface7=IMG_Load("baladown.png");
@@ -102,6 +106,21 @@ int main(int argc, char* args[]) {
         }
 
     fclose(fp);
+
+    //mapa estatico
+    int mapa_est[13][13];
+    contador=0;
+    for(int i=0; i<ALTO; i++){
+        for(int j=0; j<ANCHO; j++){
+            if (valores[contador]==DESTRUCTIBLE || valores[contador]==TANQUE1 || valores[contador]==TANQUE2){
+                mapa_est[i][j]=VACIO;
+                contador++;
+                continue;
+            }
+            mapa_est[i][j]=valores[contador];
+            contador++;
+        }
+    }
     
     // reservar memoria dinámica
     juego.mapa = malloc(sizeof(int*) * ALTO);
@@ -117,8 +136,6 @@ int main(int argc, char* args[]) {
             contador++;
         }
     }
-
-
 
 
 
@@ -143,6 +160,7 @@ int main(int argc, char* args[]) {
             }
             if (e.type == SDL_KEYDOWN) {
                 SDL_Keycode tecla = e.key.keysym.sym;
+
 
                 switch (tecla) {
 
@@ -198,7 +216,7 @@ int main(int argc, char* args[]) {
             }
         }
 
-        actualizar_estado(&juego);
+
 
 
         
@@ -210,18 +228,29 @@ int main(int argc, char* args[]) {
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
 
+
+        //Dibuja bloques estaticos
+        for(int i=0;i<filas;i++){
+            for(int j=0;j<columnas;j++){
+                SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
+                switch(mapa_est[i][j]){
+                    case 0:
+                        SDL_RenderCopy(render,imagenes[0],NULL,&destRect);
+                        break;
+                    case 2:
+                        SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
+                        break;
+                }
+            }
+        } 
+
+        //Dibuja entidades
         for(int i=0;i<filas;i++){
             for(int j=0;j<columnas;j++){
                 SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
                 switch(juego.mapa[i][j]){
-                    case 0:
-                        SDL_RenderCopy(render,imagenes[0],NULL,&destRect);
-                        break;
                     case 1:
                         SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
-                        break;
-                    case 2:
-                        SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
                         break;
                     case 3:
                         SDL_RenderCopy(render,imagenes[3],NULL,&destRect);
@@ -247,6 +276,8 @@ int main(int argc, char* args[]) {
         }
         SDL_RenderPresent(render);
 
+        actualizar_estado(&juego);
+
         juego_terminado(&juego);
         if (juego_terminado(&juego) == 1){
             SDL_Delay(3000);
@@ -261,8 +292,8 @@ int main(int argc, char* args[]) {
     //Liberar memoria
     for (int i = 0; i < ALTO; i++){
         free(juego.mapa[i]);
-        free(juego.mapa);
     }
+    free(juego.mapa);
 
     //Cierre de ventana
     SDL_DestroyWindow(ventana);
@@ -270,4 +301,3 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
-
