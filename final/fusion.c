@@ -282,10 +282,10 @@ int main(int argc, char* args[]) {
                         SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
                         break;
                     case 3:
-                        SDL_RenderCopy(render,imagenes[3],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
+                        SDL_RenderCopyEx(render,imagenes[3],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
                         break;
                     case 4:
-                        SDL_RenderCopy(render,imagenes[4],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
+                        SDL_RenderCopyEx(render,imagenes[4],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
                         break;
                     case 5:
                         SDL_RenderCopy(render,imagenes[5],NULL,&destRect);
@@ -330,4 +330,5 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
+
 
