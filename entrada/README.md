@@ -8,6 +8,7 @@ Las casillas en el laberinto son:
 - 2: Casilla con bloque indestructible
 - 3: Casilla cual contiene el primer tanque.
 - 4: Casilla cual contiene el segundo tanque.
+- 5: Casilla cual contiene una vida.
 
 El laberinto se genera a traves de un disposicion de casillas aleatorias para luego ser verificado por el algoritmo DFS.
 
