@@ -147,7 +147,10 @@ int main(int argc, char* args[]) {
     inicializar_juego(&juego);
     int corriendo = 1;
     SDL_Event e;
-
+    double angulo1=0;
+    double angulo1ob=0;
+    double angulo2=0;
+    double angulo2ob=0;
     while (corriendo) {
 
         // -------------------------//
@@ -168,36 +171,44 @@ int main(int argc, char* args[]) {
                     case SDLK_w:
                         juego.jugador1.direccion=0;
                         mover_tanque(&juego, &juego.jugador1, 3);
+                        angulo1ob=0;
                         break;
                     case SDLK_d:
                         juego.jugador1.direccion=1;
                         mover_tanque(&juego, &juego.jugador1, 3);
+                        angulo1ob=90;
                         break;
                     case SDLK_s:
                         juego.jugador1.direccion=2;
                         mover_tanque(&juego, &juego.jugador1, 3);
+                        angulo1ob=180;
                         break;
                     case SDLK_a:
                         juego.jugador1.direccion=3;
                         mover_tanque(&juego, &juego.jugador1, 3);
+                        angulo1ob=270;
                         break;
 
                     //Movimientos jugador 2
                     case SDLK_UP:
                         juego.jugador2.direccion=0;
                         mover_tanque(&juego, &juego.jugador2, 4);
+                        angulo2ob=0;
                         break;
                     case SDLK_RIGHT:
                         juego.jugador2.direccion=1;
                         mover_tanque(&juego, &juego.jugador2, 4);
+                        angulo2ob=90;
                         break;
                     case SDLK_DOWN:
                         juego.jugador2.direccion=2;
                         mover_tanque(&juego, &juego.jugador2, 4);
+                        angulo2ob=180;
                         break;
                     case SDLK_LEFT:
                         juego.jugador2.direccion=3;
                         mover_tanque(&juego, &juego.jugador2, 4);
+                        angulo2ob=270;
                         break;
 
 
@@ -214,6 +225,24 @@ int main(int argc, char* args[]) {
                         break;
                 }
             }
+        }
+                // Animación suave de rotación
+        double velocidadRotacion=5; // grados por frame
+
+        if(angulo1<angulo1ob){
+            angulo1+=velocidadRotacion;
+            if(angulo1>angulo1ob)angulo1=angulo1ob;
+        }else if(angulo1>angulo1ob){
+            angulo1-=velocidadRotacion;
+            if(angulo1<angulo1ob)angulo1=angulo1ob;
+        }
+
+        if(angulo2<angulo2ob){
+            angulo2+=velocidadRotacion;
+            if(angulo2>angulo2ob)angulo2=angulo2ob;
+        }else if(angulo2>angulo2ob){
+            angulo2-=velocidadRotacion;
+            if (angulo2<angulo2ob)angulo2=angulo2ob;
         }
 
 
@@ -253,10 +282,10 @@ int main(int argc, char* args[]) {
                         SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
                         break;
                     case 3:
-                        SDL_RenderCopy(render,imagenes[3],NULL,&destRect);
+                        SDL_RenderCopy(render,imagenes[3],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
                         break;
                     case 4:
-                        SDL_RenderCopy(render,imagenes[4],NULL,&destRect);
+                        SDL_RenderCopy(render,imagenes[4],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
                         break;
                     case 5:
                         SDL_RenderCopy(render,imagenes[5],NULL,&destRect);
@@ -301,3 +330,4 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
+
