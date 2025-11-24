@@ -276,9 +276,16 @@ void actualizar_balas(Juego *juego) {
                     juego->jugador2.vida-=1;
                     mapa_nuevo[i][j]=VACIO;
                 }
-                else{
-                    mapa_nuevo[i][j]=VACIO;
-                }
+		        else{
+		            mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[(i)-1][j]=VACIO;
+		        }
+		        if(i-2>=0){
+		            if (juego->mapa[(i)-2][j]==BALA_ABAJO){
+		                mapa_nuevo[i-1][j]=VACIO;
+		                mapa_nuevo[(i)-2][j]=VACIO;
+		            }
+		        }
 
             }
 
@@ -302,9 +309,17 @@ void actualizar_balas(Juego *juego) {
                     juego->jugador2.vida-=1;
                     mapa_nuevo[i][j]=VACIO;
                 }
-                else{
+		        else{
                     mapa_nuevo[i][j]=VACIO;
-                }
+                    mapa_nuevo[i][j+1]=VACIO;
+		        }
+		
+		        if(j+2<=13){
+		          if(juego->mapa[i][j+2]==BALA_IZQUIERDA){
+                    mapa_nuevo[i][j+1]=VACIO;
+		            mapa_nuevo[i][j+2]=VACIO;
+		          }
+		        }
 
             } 
              
@@ -328,9 +343,17 @@ void actualizar_balas(Juego *juego) {
                     juego->jugador2.vida-=1;
                     mapa_nuevo[i][j]=VACIO;
                 }
-                else{
+		        else{
                     mapa_nuevo[i][j]=VACIO;
-                }
+                    mapa_nuevo[(i)+1][j]=VACIO;
+		        }
+		
+		        if (i+2<=13){
+		          if (juego->mapa[(i)+2][j]==BALA_ARRIBA){
+                    mapa_nuevo[i+1][j]=VACIO;
+		            mapa_nuevo[(i)+2][j]=VACIO;
+		            }
+		        }
 
             }
 
@@ -354,9 +377,17 @@ void actualizar_balas(Juego *juego) {
                     juego->jugador2.vida-=1;
                     mapa_nuevo[i][j]=VACIO;
                 }
-                else{
+		        else{
                     mapa_nuevo[i][j]=VACIO;
-                }
+                    mapa_nuevo[i][j-1]=VACIO;
+		        }
+		
+		        if(j-2>=0){
+		          if(juego->mapa[i][j-2]==BALA_DERECHA){
+                    mapa_nuevo[i][j-1]=VACIO;
+		            mapa_nuevo[i][j-2]=VACIO;
+		          }
+		        }
 
             } 
         }
