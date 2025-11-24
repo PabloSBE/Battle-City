@@ -1,0 +1,375 @@
+#include "logica.h"
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+
+
+void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y){
+
+    SDL_Color blanco = {255, 255, 255};
+
+    SDL_Surface* s = TTF_RenderText_Solid(f, msg, blanco);
+    SDL_Texture* t = SDL_CreateTextureFromSurface(r, s);
+
+    SDL_Rect rect = {x, y, s->w, s->h};
+    SDL_RenderCopy(r, t, NULL, &rect);
+
+    SDL_FreeSurface(s);
+    SDL_DestroyTexture(t);
+}
+
+
+void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
+
+    int hudY = 832;
+    int hudH = 120;
+
+    SDL_Rect hudRect = {0, hudY, 832, hudH};
+    SDL_SetRenderDrawColor(render, 20, 20, 20, 255);
+    SDL_RenderFillRect(render, &hudRect);
+
+    char texto[64];
+
+    //tanque 1
+    sprintf(texto, "T1 Vidas: %d", juego->jugador1.vida);
+    dibujar_texto(render, fuente, texto, 20, hudY + 20);
+
+    sprintf(texto, "T1 Balas: %d", juego->jugador1.disparos);
+    dibujar_texto(render, fuente, texto, 20, hudY + 60);
+
+    //tanque 2
+    sprintf(texto, "T2 Vidas: %d", juego->jugador2.vida);
+    dibujar_texto(render, fuente, texto, 832 - 340, hudY + 20);
+
+    sprintf(texto, "T2 Balas: %d", juego->jugador2.disparos);
+    dibujar_texto(render, fuente, texto, 832 - 340, hudY + 60);
+}
+
+
+// Lee mapa, busca posiciones de tanques
+void inicializar_juego(Juego *juego) {
+
+    //Busca los tanques
+    for(int i = 0; i < ALTO; i++) {
+        for(int j = 0; j < ANCHO; j++) {
+
+            //Guarda la ubicacion del jugador 1 en el struct
+            if(juego->mapa[i][j] == 3) {
+                juego->jugador1.fila = i;
+                juego->jugador1.columna = j;
+                juego->jugador1.vida = 3;
+                juego->jugador1.disparos = 0;
+                juego->jugador1.direccion = 0;
+            }
+
+            //Guarda la ubicacion del jugador 2 en el struct
+            if(juego->mapa[i][j] == 4) {
+                juego->jugador2.fila = i;
+                juego->jugador2.columna = j;
+                juego->jugador2.vida = 3;
+                juego->jugador2.disparos = 0;
+                juego->jugador2.direccion = 0;
+            }
+        }
+    }
+    
+}
+
+
+void vidas(Juego *juego){
+
+    int x = rand() % 13;
+    int y = rand() % 13;
+  
+    if(juego->mapa[x][y] != 2 && juego->mapa[x][y] != 3 && juego->mapa[x][y] != 4)
+      juego->mapa[x][y] = 9;
+
+}
+
+
+/* Actualiza balas, movimientos automáticos, etc */
+void actualizar_estado(Juego *juego) {
+    actualizar_balas(juego);
+
+}
+
+/* Devuelve 1 si el tanque logró moverse, 0 si no */
+int mover_tanque(Juego *juego, Tanque *t, int jugador) {
+
+    //Arriba
+    if (t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VACIO){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->fila -= 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        return 1;
+
+    }else if (t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VIDA){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->fila -= 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        t->vida+=1;
+        return 1;
+    } 
+
+    //Derecha
+    else if (t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VACIO){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->columna += 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        return 1;
+
+    }else if (t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VIDA){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->columna += 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        t->vida+=1;
+        return 1;
+    }
+
+    //Abajo
+    else if (t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VACIO){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->fila += 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        return 1;
+
+    }else if (t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VIDA){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->fila += 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        t->vida+=1;
+        return 1;
+    }
+
+    //Izquierda
+    else if (t->direccion==3  && juego->mapa[t->fila][(t->columna)-1]==VACIO){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->columna -= 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        return 1;
+
+    }else if (t->direccion==3  && juego->mapa[t->fila][(t->columna)-1]==VIDA){
+        juego->mapa[t->fila][t->columna]=VACIO;
+        t->columna -= 1;
+        juego->mapa[t->fila][t->columna]=jugador;
+        t->vida+=1;
+        return 1;
+    }
+
+    else{
+        return 0;  
+    }
+
+}
+
+/* Crea bala desde la posición del tanque */
+void disparar(Juego *juego, Tanque *t) {
+
+    t->disparos+=1;
+
+    //disparo hacia arriba
+    if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VACIO){
+        juego->mapa[(t->fila)-1][t->columna]=BALA_ARRIBA;
+    }
+    else if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==DESTRUCTIBLE){
+        juego->mapa[(t->fila)-1][t->columna]=VACIO;
+    }
+    else if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==3){
+        juego->jugador1.vida-=1;
+    }
+    else if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==4){
+        juego->jugador2.vida-=1;
+    }
+
+    //disparo hacia la derecha
+    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VACIO){
+        juego->mapa[t->fila][(t->columna)+1]=BALA_DERECHA;
+    }
+    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==DESTRUCTIBLE){
+        juego->mapa[t->fila][(t->columna)+1]=VACIO;
+    }
+    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==3){
+        juego->jugador1.vida-=1;
+    }
+    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==4){
+        juego->jugador2.vida-=1;
+    }
+
+    //disparo hacia abajo
+    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VACIO){
+        juego->mapa[(t->fila)+1][t->columna]=BALA_ABAJO;
+    }
+    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==DESTRUCTIBLE){
+        juego->mapa[(t->fila)+1][t->columna]=VACIO;
+    }
+    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==3){
+        juego->jugador1.vida-=1;
+    }
+    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==4){
+        juego->jugador2.vida-=1;
+    }
+
+    //disparo hacia la izquierda
+    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==VACIO){
+        juego->mapa[t->fila][(t->columna)-1]=BALA_IZQUIERDA;
+    }
+    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==DESTRUCTIBLE){
+        juego->mapa[t->fila][(t->columna)-1]=VACIO;
+    }
+    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==3){
+        juego->jugador1.vida-=1;
+    }
+    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==4){
+        juego->jugador2.vida-=1;
+    }
+
+    else{
+        t->disparos-=1;
+    }
+
+}
+
+/* Actualiza posición de balas e interacciones */
+void actualizar_balas(Juego *juego) {
+
+    int mapa_nuevo[ALTO][ANCHO];
+
+    //Copia el mapa
+    for(int i = 0; i < ALTO; i++) {
+        for(int j = 0; j < ANCHO; j++) {
+            mapa_nuevo[i][j] = juego->mapa[i][j];
+        }
+    }
+
+    for(int i = 0; i < ALTO; i++) {
+        for(int j = 0; j < ANCHO; j++) {
+
+            //Colision ante cada tipo de elemento
+            if(juego->mapa[i][j]==BALA_ARRIBA){
+                if(juego->mapa[(i)-1][j]==VACIO){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[(i)-1][j]=BALA_ARRIBA;
+                }
+                else if(juego->mapa[(i)-1][j]==INDESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[(i)-1][j]==DESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[(i)-1][j]=VACIO;
+                }
+                else if(juego->mapa[(i)-1][j]==TANQUE1){
+                    juego->jugador1.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[(i)-1][j]==TANQUE2){
+                    juego->jugador2.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else{
+                    mapa_nuevo[i][j]=VACIO;
+                }
+
+            }
+
+            if(juego->mapa[i][j]==BALA_DERECHA){
+                if(juego->mapa[i][j+1]==VACIO){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[i][j+1]=BALA_DERECHA;
+                }
+                else if(juego->mapa[i][j+1]==INDESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[i][j+1]==DESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[i][j+1]=VACIO;
+                }
+                else if(juego->mapa[i][j+1]==TANQUE1){
+                    juego->jugador1.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[i][j+1]==TANQUE2){
+                    juego->jugador2.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else{
+                    mapa_nuevo[i][j]=VACIO;
+                }
+
+            } 
+             
+            if(juego->mapa[i][j]==BALA_ABAJO){
+                if(juego->mapa[(i)+1][j]==VACIO){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[(i)+1][j]=BALA_ABAJO;
+                }
+                else if(juego->mapa[(i)+1][j]==INDESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[(i)+1][j]==DESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[(i)+1][j]=VACIO;
+                }
+                else if(juego->mapa[(i)+1][j]==TANQUE1){
+                    juego->jugador1.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[(i)+1][j]==TANQUE2){
+                    juego->jugador2.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else{
+                    mapa_nuevo[i][j]=VACIO;
+                }
+
+            }
+
+            if(juego->mapa[i][j]==BALA_IZQUIERDA){
+                if(juego->mapa[i][j-1]==VACIO){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[i][j-1]=BALA_IZQUIERDA;
+                }
+                else if(juego->mapa[i][j-1]==INDESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[i][j-1]==DESTRUCTIBLE){
+                    mapa_nuevo[i][j]=VACIO;
+                    mapa_nuevo[i][j-1]=VACIO;
+                }
+                else if(juego->mapa[i][j-1]==TANQUE1){
+                    juego->jugador1.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else if(juego->mapa[i][j-1]==TANQUE2){
+                    juego->jugador2.vida-=1;
+                    mapa_nuevo[i][j]=VACIO;
+                }
+                else{
+                    mapa_nuevo[i][j]=VACIO;
+                }
+
+            } 
+        }
+    }
+
+    for(int i = 0; i < ALTO; i++) {
+        for(int j = 0; j < ANCHO; j++) {
+            juego->mapa[i][j] = mapa_nuevo[i][j];
+        }
+    }
+}
+
+
+/* Retorna 1 si alguien ganó */
+int juego_terminado(Juego *juego) {
+
+    if(juego->jugador1.vida<=0){
+        return 1;
+
+    }
+
+    if(juego->jugador2.vida<=0){
+        return 1;
+    }
+
+    return 0;
+}
