@@ -20,6 +20,12 @@
 #define VIDA 9  
 
 typedef struct {
+    SDL_Rect rect;
+    SDL_Color color;
+    char texto[50];
+} Boton;
+
+typedef struct {
     int fila, columna;
     int vida;
     int disparos;
@@ -36,8 +42,13 @@ typedef struct {
 void inicializar_juego(Juego *juego);
 
 void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y);
+void dibujar_boton(SDL_Renderer *render, TTF_Font *fuente, Boton *boton);
+
 void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego);
+int dibujar_menu(SDL_Renderer *render, TTF_Font *fuente, TTF_Font *fuenteBoton, Juego *juego);
 void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego);
+
+int click_boton(Boton *boton, int x, int y);
 
 void vidas(Juego *juego);
 void actualizar_estado(Juego *juego);
@@ -55,5 +66,6 @@ int juego_terminado(Juego *juego);
 
 /* ----- Generar Mapa ----- */
 void generar_archivo_mapa();
+void generar_guardado_mapa(int **mapa);
 
 #endif

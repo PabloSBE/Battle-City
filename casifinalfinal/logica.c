@@ -18,6 +18,26 @@ void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y){
     SDL_DestroyTexture(t);
 }
 
+void dibujar_boton(SDL_Renderer *render, TTF_Font *fuente, Boton *boton) {
+    // 1. Dibujar el rectángulo del fondo
+    SDL_SetRenderDrawColor(render, boton->color.r, boton->color.g, boton->color.b, boton->color.a);
+    SDL_RenderFillRect(render, &boton->rect);
+
+    // 2. Dibujar el borde (opcional, para que se vea mejor)
+    SDL_SetRenderDrawColor(render, 255, 255, 255, 255); // Borde blanco
+    SDL_RenderDrawRect(render, &boton->rect);
+
+    // 3. Calcular posición para centrar el texto
+    int texto_w, texto_h;
+    TTF_SizeText(fuente, boton->texto, &texto_w, &texto_h);
+    
+    int texto_x = boton->rect.x + (boton->rect.w - texto_w) / 2;
+    int texto_y = boton->rect.y + (boton->rect.h - texto_h) / 2;
+
+    // 4. Usar tu función existente para dibujar el texto encima
+    // Nota: Necesitas modificar ligeramente tu dibujar_texto o usar esta lógica directa:
+    dibujar_texto(render, fuente, boton->texto, texto_x, texto_y);
+}
 
 void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
 
@@ -45,6 +65,58 @@ void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
     dibujar_texto(render, fuente, texto, 832 - 340, hudY + 60);
 }
 
+int dibujar_menu(SDL_Renderer *render, TTF_Font *fuente, TTF_Font *fuenteBoton, Juego *juego) {
+  SDL_Event e;
+
+  Boton btnNuevo;
+  btnNuevo.rect = (SDL_Rect) {290, 225, 250, 75};
+  btnNuevo.color = (SDL_Color) {0, 150, 0, 255};
+  sprintf(btnNuevo.texto, "Nueva Partida");
+
+  Boton btnCargar;
+  btnCargar.rect = (SDL_Rect) {290, 350, 250, 75};
+  btnCargar.color = (SDL_Color) {0, 0, 150, 255};
+  sprintf(btnCargar.texto, "Cargar Partida");
+
+  Boton btnSalir;
+  btnSalir.rect = (SDL_Rect) {290, 475, 250, 75};
+  btnSalir.color = (SDL_Color) {150, 0, 0, 255};
+  sprintf(btnSalir.texto, "Salir");
+
+  while(1) {
+      while(SDL_PollEvent(&e)) {
+        if(e.type == SDL_MOUSEBUTTONDOWN) {
+          if(e.button.button == SDL_BUTTON_LEFT) {
+            int x = e.button.x;
+            int y = e.button.y;
+
+            if(click_boton(&btnNuevo, x, y)) {
+              return 1;
+            }
+            
+            if(click_boton(&btnCargar, x, y)) {
+              return 2; 
+            }
+
+            if(click_boton(&btnSalir, x, y)) {
+              return 0;
+            }
+          }
+        }
+      }
+
+    SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+    SDL_RenderClear(render);
+    
+    dibujar_texto(render, fuente, "Battle City", 270, 100);
+
+    dibujar_boton(render, fuenteBoton, &btnNuevo);
+    dibujar_boton(render, fuenteBoton, &btnCargar);
+    dibujar_boton(render, fuenteBoton, &btnSalir);
+
+    SDL_RenderPresent(render);
+  }
+}
 void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego) {
   SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
   SDL_RenderClear(render);
@@ -59,6 +131,14 @@ void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego) {
   dibujar_texto(render, fuente, "Fin Del Juego", 290, 300);
   dibujar_texto(render, fuente, mensaje, 280, 380);
   dibujar_texto(render, fuente, "Presione ESC para salir", 130, 500);
+}
+
+int click_boton(Boton *boton, int x, int y) {
+  if(x >= boton->rect.x && x <= (boton->rect.x + boton->rect.w) && y >= boton->rect.y && y <= (boton->rect.y + boton->rect.h)) {
+      return 1;
+  }
+
+  return 0;
 }
 
 // Lee mapa, busca posiciones de tanques
@@ -612,4 +692,25 @@ void generar_archivo_mapa() {
 
   fclose(fp);
   liberar_memoria(mapa);
+}
+
+void generar_guardado_mapa(int **mapa) {
+  FILE *fp;
+
+  fp = fopen("partida.txt", "w");
+
+  if(fp == NULL) {
+    printf("Ha habido nu problema al guardar el mapa");
+    return;
+  }
+
+  for(int i = 0; i < LARGO; i++) {
+    for(int j = 0; j < ANCHO; j++) {
+      fprintf(fp, "%d ", mapa[i][j]);
+    }
+
+    fprintf(fp, "\n");
+  }
+
+  fclose(fp);
 }

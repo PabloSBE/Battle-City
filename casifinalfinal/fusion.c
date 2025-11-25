@@ -13,7 +13,55 @@
 #define columnas 13
 #define tamano 64
 
+void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
+    FILE *fp = fopen("mapa.txt", "r");   
+    if (fp == NULL) {
+        printf("Error al abrir el archivo mapa.txt\n");
+        return;
+    }
 
+    int c;
+    int valores[169];
+    int contador = 0;
+
+    // Leer valores
+    while ((c = fgetc(fp)) != EOF && contador < 169) {
+        if (isdigit(c)){
+            valores[contador] = c - '0';
+            contador++;
+        }
+    }
+    fclose(fp);
+
+    // 1. Rellenar Mapa Estático (Paredes)
+    contador = 0;
+    for(int i = 0; i < filas; i++){
+        for(int j = 0; j < columnas; j++){
+            // Si es algo movible o destructible, en el estático va VACIO
+            if (valores[contador] == DESTRUCTIBLE || valores[contador] == TANQUE1 || 
+                valores[contador] == TANQUE2 || valores[contador] == VIDA ||
+                valores[contador] >= 5) { // >= 5 son balas
+                
+                mapa_est[i][j] = VACIO;
+            } else {
+                mapa_est[i][j] = valores[contador];
+            }
+            contador++;
+        }
+    }
+    
+    // 2. Rellenar Mapa Dinámico (Juego)
+    contador = 0;
+    for(int i = 0; i < filas; i++){
+        for(int j = 0; j < columnas; j++){
+            juego->mapa[i][j] = valores[contador];
+            contador++;
+        }
+    }
+
+    // 3. Inicializar posiciones y estados de tanques
+    inicializar_juego(juego);
+}
 
 int main(int argc, char* args[]) {
 
@@ -50,12 +98,11 @@ int main(int argc, char* args[]) {
     }
 
     TTF_Font* fuente = TTF_OpenFont("PressStart2P-Regular.ttf", 28);
+    TTF_Font* fuenteBoton = TTF_OpenFont("PressStart2P-Regular.ttf", 14);
     if (!fuente) {
         printf("Error cargando fuente\n");
         return 1;
     }
-
-
 
     //Cargar imagenes
 
@@ -108,63 +155,14 @@ int main(int argc, char* args[]) {
     // =========================//
 
     Juego juego;
+    int mapa_est[filas][columnas]; 
 
-    //Abrir archivo
-    FILE *fp = fopen("mapa.txt", "r");   
-    if (fp == NULL) {
-        printf("Error al abrir el archivo");
-        return 1;
-    }
-
-    int buffer[169];
-    int c;
-
-    //anade los valores del mapa a un arreglo
-    int valores[169], contador=0;
-    while ((c=fgetc(fp)) != EOF) {
-        if (isdigit(c)){
-            valores[contador]=c-'0';
-            contador++;
-            }
-        }
-
-    fclose(fp);
-
-
-
-    //mapa estatico
-    int mapa_est[13][13];
-    contador=0;
-    for(int i=0; i<ALTO; i++){
-        for(int j=0; j<ANCHO; j++){
-            if (valores[contador]==DESTRUCTIBLE || valores[contador]==TANQUE1 || valores[contador]==TANQUE2 || valores[contador]==VIDA){
-                mapa_est[i][j]=VACIO;
-                contador++;
-                continue;
-            }
-            mapa_est[i][j]=valores[contador];
-            contador++;
-        }
-    }
-    
-    // reservar memoria dinámica
     juego.mapa = malloc(sizeof(int*) * ALTO);
     for (int i=0; i<ALTO; i++) {
         juego.mapa[i] = malloc(sizeof(int) * ANCHO);
     }
 
-    //anade los valores del arreglo a la matriz mapa
-    contador=0;
-    for(int i=0; i<ALTO; i++){
-        for(int j=0; j<ANCHO; j++){
-            juego.mapa[i][j]=valores[contador];
-            contador++;
-        }
-    }
-
-
-
-
+    cargar_datos_desde_archivo(&juego, mapa_est);
     // =============================//
     //      Bucle principal         //
     // =============================//
@@ -179,8 +177,9 @@ int main(int argc, char* args[]) {
 
     Uint32 ultimo = 0;
     Uint32 intervalo = 6000;   //10seg
-
+    
     int fin = 0;
+    int menu = 1;
     
     while (corriendo) {
 
@@ -199,70 +198,71 @@ int main(int argc, char* args[]) {
                     corriendo = 0;
                 }
 
-              if(!fin) {
-                switch (tecla) {
+                else if(!fin) {
+                    switch (tecla) {
 
-                    //Movimientos jugador 1
-                    case SDLK_w:
-                        juego.jugador1.direccion=0;
-                        mover_tanque(&juego, &juego.jugador1, 3);
-                        angulo1ob=0;
-                        break;
-                    case SDLK_d:
-                        juego.jugador1.direccion=1;
-                        mover_tanque(&juego, &juego.jugador1, 3);
-                        angulo1ob=90;
-                        break;
-                    case SDLK_s:
-                        juego.jugador1.direccion=2;
-                        mover_tanque(&juego, &juego.jugador1, 3);
-                        angulo1ob=180;
-                        break;
-                    case SDLK_a:
-                        juego.jugador1.direccion=3;
-                        mover_tanque(&juego, &juego.jugador1, 3);
-                        angulo1ob=270;
-                        break;
+                        //Movimientos jugador 1
+                        case SDLK_w:
+                            juego.jugador1.direccion=0;
+                            mover_tanque(&juego, &juego.jugador1, 3);
+                            angulo1ob=0;
+                            break;
+                        case SDLK_d:
+                            juego.jugador1.direccion=1;
+                            mover_tanque(&juego, &juego.jugador1, 3);
+                            angulo1ob=90;
+                            break;
+                        case SDLK_s:
+                            juego.jugador1.direccion=2;
+                            mover_tanque(&juego, &juego.jugador1, 3);
+                            angulo1ob=180;
+                            break;
+                        case SDLK_a:
+                            juego.jugador1.direccion=3;
+                            mover_tanque(&juego, &juego.jugador1, 3);
+                            angulo1ob=270;
+                            break;
 
-                    //Movimientos jugador 2
-                    case SDLK_UP:
-                        juego.jugador2.direccion=0;
-                        mover_tanque(&juego, &juego.jugador2, 4);
-                        angulo2ob=0;
-                        break;
-                    case SDLK_RIGHT:
-                        juego.jugador2.direccion=1;
-                        mover_tanque(&juego, &juego.jugador2, 4);
-                        angulo2ob=90;
-                        break;
-                    case SDLK_DOWN:
-                        juego.jugador2.direccion=2;
-                        mover_tanque(&juego, &juego.jugador2, 4);
-                        angulo2ob=180;
-                        break;
-                    case SDLK_LEFT:
-                        juego.jugador2.direccion=3;
-                        mover_tanque(&juego, &juego.jugador2, 4);
-                        angulo2ob=270;
-                        break;
+                        //Movimientos jugador 2
+                        case SDLK_UP:
+                            juego.jugador2.direccion=0;
+                            mover_tanque(&juego, &juego.jugador2, 4);
+                            angulo2ob=0;
+                            break;
+                        case SDLK_RIGHT:
+                            juego.jugador2.direccion=1;
+                            mover_tanque(&juego, &juego.jugador2, 4);
+                            angulo2ob=90;
+                            break;
+                        case SDLK_DOWN:
+                            juego.jugador2.direccion=2;
+                            mover_tanque(&juego, &juego.jugador2, 4);
+                            angulo2ob=180;
+                            break;
+                        case SDLK_LEFT:
+                            juego.jugador2.direccion=3;
+                            mover_tanque(&juego, &juego.jugador2, 4);
+                            angulo2ob=270;
+                            break;
 
+                        case SDLK_f:
+                            disparar(&juego, &juego.jugador1);
+                            break;
+                        case SDLK_l:
+                            disparar(&juego, &juego.jugador2);
+                            break;
 
-
-                    case SDLK_ESCAPE:
-                        corriendo = 0;
-                        break;
-
-                    case SDLK_f:
-                        disparar(&juego, &juego.jugador1);
-                        break;
-                    case SDLK_l:
-                        disparar(&juego, &juego.jugador2);
-                        break;
+                        case SDLK_ESCAPE:
+                            corriendo = 0;
+                            break;
+                        case SDLK_p:
+                            generar_guardado_mapa(juego.mapa);
+                            break;
+                    }
                 }
-              }
             }
         }
-                // Animación suave de rotación
+        // Animación suave de rotación
         double velocidadRotacion=30; // grados por frame
 
         if(angulo1ob==0 && angulo1>180)angulo1 -= 360;
@@ -289,11 +289,6 @@ int main(int argc, char* args[]) {
             if (angulo2<angulo2ob)angulo2=angulo2ob;
         }
 
-
-
-
-        
-
         // -------------------------//
         //      Dibujar mapa        //
         // -------------------------//
@@ -301,81 +296,113 @@ int main(int argc, char* args[]) {
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
       
-        if(fin)
-          dibujar_fin(render, fuente, &juego);
+        if(menu) {
+            int opcion = dibujar_menu(render, fuente, fuenteBoton, &juego);
+        
+            if(opcion == 1) {
+                generar_archivo_mapa();           
+                cargar_datos_desde_archivo(&juego, mapa_est); 
+                menu = 0;
+            }
+
+            if(opcion == 2) {
+                FILE *fCheck = fopen("partida.txt", "r");
+                
+                if(fCheck == NULL) {
+                    printf("No existe partida guardada.\n");
+                } else {
+                    fclose(fCheck);
+                    
+                    remove("mapa.txt");
+                    rename("partida.txt", "mapa.txt"); 
+                    
+                    cargar_datos_desde_archivo(&juego, mapa_est);
+                    menu = 0;
+                }
+            }
+
+            else if(opcion == 0) {
+                corriendo = 0;
+            }
+        }
+
+        else if(fin) {
+            dibujar_fin(render, fuente, &juego);
+
+            remove("partida.txt");
+        }
+
         else {
-              //Dibuja bloques estaticos
-        for(int i=0;i<filas;i++){
-            for(int j=0;j<columnas;j++){
-                SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
-                switch(mapa_est[i][j]){
-                    case 0:
-                        SDL_RenderCopy(render,imagenes[0],NULL,&destRect);
-                        break;
-                    case 2:
-                        SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
-                        break;
+            //Dibuja bloques estaticos
+            for(int i=0;i<filas;i++){
+                for(int j=0;j<columnas;j++){
+                    SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
+                    switch(mapa_est[i][j]){
+                        case 0:
+                            SDL_RenderCopy(render,imagenes[0],NULL,&destRect);
+                            break;
+                        case 2:
+                            SDL_RenderCopy(render,imagenes[2],NULL,&destRect);
+                            break;
+                    }
+                }
+            } 
+
+            //Dibuja entidades
+            for(int i=0;i<filas;i++){
+                for(int j=0;j<columnas;j++){
+                    SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
+                    switch(juego.mapa[i][j]){
+                        case 1:
+                            SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
+                            break;
+                        case 3:
+                            SDL_RenderCopyEx(render,imagenes[3],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
+                            break;
+                        case 4:
+                            SDL_RenderCopyEx(render,imagenes[4],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
+                            break;
+                        case 5:
+                            SDL_RenderCopy(render,imagenes[5],NULL,&destRect);
+                            break;
+                        case 6:
+                            SDL_RenderCopy(render,imagenes[6],NULL,&destRect);
+                            break;
+                        case 7:
+                            SDL_RenderCopy(render,imagenes[7],NULL,&destRect);
+                            break;
+                        case 8:
+                            SDL_RenderCopy(render,imagenes[8],NULL,&destRect);
+                            break;
+                        case 9:
+                            SDL_RenderCopy(render,imagenes[9],NULL,&destRect);
+                            break;
+                    }
                 }
             }
-        } 
 
-        //Dibuja entidades
-        for(int i=0;i<filas;i++){
-            for(int j=0;j<columnas;j++){
-                SDL_Rect destRect={j*tamano,i*tamano,tamano,tamano};
-                switch(juego.mapa[i][j]){
-                    case 1:
-                        SDL_RenderCopy(render,imagenes[1],NULL,&destRect);
-                        break;
-                    case 3:
-                        SDL_RenderCopyEx(render,imagenes[3],NULL,&destRect,angulo1,NULL,SDL_FLIP_NONE);
-                        break;
-                    case 4:
-                        SDL_RenderCopyEx(render,imagenes[4],NULL,&destRect,angulo2,NULL,SDL_FLIP_NONE);
-                        break;
-                    case 5:
-                        SDL_RenderCopy(render,imagenes[5],NULL,&destRect);
-                        break;
-                    case 6:
-                        SDL_RenderCopy(render,imagenes[6],NULL,&destRect);
-                        break;
-                    case 7:
-                        SDL_RenderCopy(render,imagenes[7],NULL,&destRect);
-                        break;
-                    case 8:
-                        SDL_RenderCopy(render,imagenes[8],NULL,&destRect);
-                        break;
-                    case 9:
-                        SDL_RenderCopy(render,imagenes[9],NULL,&destRect);
-                        break;
-                }
+            dibujar_hud(render, fuente, &juego);
 
+            SDL_RenderPresent(render);
+
+            // genera vidas cada 6 segundos
+            Uint32 ahora = SDL_GetTicks();
+            if (ahora - ultimo >= intervalo) {
+                vidas(&juego);      
+                ultimo = ahora;
+            }
+
+            actualizar_estado(&juego);
+
+            if (juego_terminado(&juego) == 1){
+                SDL_Delay(1000);
+                fin = 1; 
             }
         }
 
-        dibujar_hud(render, fuente, &juego);
-
         SDL_RenderPresent(render);
-
-        // genera vidas cada 6 segundos
-        Uint32 ahora = SDL_GetTicks();
-        if (ahora - ultimo >= intervalo) {
-            vidas(&juego);      
-            ultimo = ahora;
-        }
-
-        actualizar_estado(&juego);
-
-        if (juego_terminado(&juego) == 1){
-          SDL_Delay(1000);
-          fin = 1; 
-        }
+        SDL_Delay(66); //Frecuencia de actualizacion cada 100ms
     }
-        SDL_RenderPresent(render);
-        SDL_Delay(66);     //Frecuencia de actualizacion cada 100ms
-    }
-
-
 
     //Liberar memoria
     for (int i = 0; i < ALTO; i++){
