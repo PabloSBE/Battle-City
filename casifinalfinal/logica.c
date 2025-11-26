@@ -179,12 +179,12 @@ void vidas(Juego *juego){
 }
 
 
-/* Actualiza balas, movimientos automáticos, etc */
+// Actualiza balas
 void actualizar_estado(Juego *juego) {
     actualizar_balas(juego);
 }
 
-/* Devuelve 1 si el tanque logró moverse, 0 si no */
+// Movimiento del tanque
 int mover_tanque(Juego *juego, Tanque *t, int jugador) {
 
     //Arriba
@@ -253,7 +253,7 @@ int mover_tanque(Juego *juego, Tanque *t, int jugador) {
 
 }
 
-/* Crea bala desde la posición del tanque */
+// Crea bala desde la posición del tanque
 void disparar(Juego *juego, Tanque *t) {
 
     t->disparos+=1;
@@ -320,7 +320,7 @@ void disparar(Juego *juego, Tanque *t) {
 
 }
 
-/* Actualiza posición de balas e interacciones */
+// Actualiza posición de balas e interacciones
 void actualizar_balas(Juego *juego) {
 
     int mapa_nuevo[ALTO][ANCHO];
@@ -481,7 +481,7 @@ void actualizar_balas(Juego *juego) {
 }
 
 
-/* Retorna 1 si alguien ganó */
+// Retorna 1 si alguien ganó 
 int juego_terminado(Juego *juego) {
 
     if(juego->jugador1.vida<=0){
