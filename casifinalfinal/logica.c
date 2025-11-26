@@ -394,7 +394,7 @@ void actualizar_balas(Juego *juego) {
                     mapa_nuevo[i][j+1]=VACIO;
 		        }
 		
-		        if(j+2<=13){
+		        if(j+2<=12){
 		          if(juego->mapa[i][j+2]==BALA_IZQUIERDA){
                     mapa_nuevo[i][j+1]=VACIO;
 		            mapa_nuevo[i][j+2]=VACIO;
@@ -428,7 +428,7 @@ void actualizar_balas(Juego *juego) {
                     mapa_nuevo[(i)+1][j]=VACIO;
 		        }
 		
-		        if (i+2<=13){
+		        if (i+2<=12){
 		          if (juego->mapa[(i)+2][j]==BALA_ARRIBA){
                     mapa_nuevo[i+1][j]=VACIO;
 		            mapa_nuevo[(i)+2][j]=VACIO;
