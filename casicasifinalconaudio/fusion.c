@@ -25,7 +25,7 @@ Mix_Chunk* snd_daño;
 Mix_Music* musica_fondo;
 
 
-int cargar_audio() {                // <<< NUEVO
+int cargar_audio() {                
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         printf("Error al iniciar SDL_mixer: %s\n", Mix_GetError());
         return 0;
@@ -83,7 +83,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     int valores[169];
     int contador = 0;
 
-    // Leer valores
+    // Leer valores del mapa.txt
     while ((c = fgetc(fp)) != EOF && contador < 169) {
         if (isdigit(c)){
             valores[contador] = c - '0';
@@ -93,6 +93,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     fclose(fp);
 
     // 1. Rellenar Mapa Estático (Paredes)
+    // (Este mapa no cambia durante el transcurso del juego) 
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -110,6 +111,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     }
     
     // 2. Rellenar Mapa Dinámico (Juego)
+    // Mapa en el que se modifican los valores constantemente
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -154,7 +156,7 @@ int main(int argc, char* args[]) {
         return EXIT_FAILURE;
     }
 
-    //Inciailizar tecto
+    //Inciailizar texto
     if (TTF_Init() == -1) {
         printf("Error al iniciar TTF: %s\n", TTF_GetError());
         return 1;
@@ -214,10 +216,7 @@ int main(int argc, char* args[]) {
 
 
 
-    // =========================//
-    // Generar nuevo mapa       //
-    // =========================//
-
+    // Generar nuevo mapa      
     generar_archivo_mapa();
 
     // =========================//
@@ -233,20 +232,25 @@ int main(int argc, char* args[]) {
     }
 
     cargar_datos_desde_archivo(&juego, mapa_est);
+
+    
     // =============================//
     //      Bucle principal         //
     // =============================//
 
+    //Se inicializan las variables de los tanques y del mapa
     inicializar_juego(&juego);
     int corriendo = 1;
     SDL_Event e;
+
+    //Angulos iniciales de los tanques
     double angulo1=0;
     double angulo1ob=0;
     double angulo2=0;
     double angulo2ob=0;
 
     Uint32 ultimo = 0;
-    Uint32 intervalo = 6000;   //10seg
+    Uint32 intervalo = 6000;   //6seg
     
     int fin = 0;
     int menu = 1;
@@ -269,6 +273,8 @@ int main(int argc, char* args[]) {
                 }
 
                 else if(!fin) {
+
+                    //Lectura de entradas
                     switch (tecla) {
 
                         //Movimientos jugador 1
@@ -323,9 +329,9 @@ int main(int argc, char* args[]) {
                             angulo2ob=270;
                             break;
 
+                        //Entrada de disparos
                         case SDLK_f:
-                            disparar(&juego, &juego.jugador1);
-                            
+                            disparar(&juego, &juego.jugador1);            
                             break;
                         case SDLK_l:
                             disparar(&juego, &juego.jugador2);
@@ -342,28 +348,36 @@ int main(int argc, char* args[]) {
                 }
             }
         }
+
+        
         // Animación suave de rotación
         double velocidadRotacion=30; // grados por frame
 
+        //Se ajusta la rotacion del tanque 1 para giros mas cortos
         if(angulo1ob==0 && angulo1>180)angulo1 -= 360;
         if(angulo1ob==270 && angulo1<90)angulo1 += 360;
 
+        //Rotacion Horaria
         if(angulo1<angulo1ob){
             angulo1+=velocidadRotacion;
             if(angulo1>angulo1ob)angulo1=angulo1ob;
 
+        //Rotacion Antihoraria
         }else if(angulo1>angulo1ob){
             angulo1-=velocidadRotacion;
             if(angulo1<angulo1ob)angulo1=angulo1ob;
         }
-
+        
+        //Se ajusta la rotacion del tanque 2 para giros mas cortos
         if(angulo2ob==0 && angulo2>180)angulo2 -= 360;
         if(angulo2ob==270 && angulo2<90)angulo2 += 360;
 
+        //Rotacion Horaria
         if(angulo2<angulo2ob){
             angulo2+=velocidadRotacion;
             if(angulo2>angulo2ob)angulo2=angulo2ob;
 
+        //Rotacion Antihoraria
         }else if(angulo2>angulo2ob){
             angulo2-=velocidadRotacion;
             if (angulo2<angulo2ob)angulo2=angulo2ob;
@@ -413,6 +427,10 @@ int main(int argc, char* args[]) {
         }
 
         else {
+
+            /* A continuacion, se recorre primero el mapa estatico (paredes y suelo), y posteriormente
+            se dibujan las entidades, con el fin de que queden por encima del mapa */
+            
             //Dibuja bloques estaticos
             for(int i=0;i<filas;i++){
                 for(int j=0;j<columnas;j++){
@@ -461,6 +479,8 @@ int main(int argc, char* args[]) {
                 }
             }
 
+            
+            //Muestra las cantidad de vidas y disparos de los tanques
             dibujar_hud(render, fuente, &juego);
 
             SDL_RenderPresent(render);
@@ -474,6 +494,7 @@ int main(int argc, char* args[]) {
 
             actualizar_estado(&juego);
 
+            //llama a la funcion de termino del juego
             if (juego_terminado(&juego) == 1){
                 SDL_Delay(1000);
                 fin = 1; 
@@ -481,7 +502,7 @@ int main(int argc, char* args[]) {
         }
 
         SDL_RenderPresent(render);
-        SDL_Delay(66); //Frecuencia de actualizacion cada 100ms
+        SDL_Delay(66);     //Frecuencia de actualizacion cada 66ms
     }
 
     //Liberar memoria
