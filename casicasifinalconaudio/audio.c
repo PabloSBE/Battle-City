@@ -43,7 +43,7 @@ int cargar_audio() {
         printf("Error cargando música: %s\n",Mix_GetError());
         return 0;
     }
-    Mix_VolumeMusic(35);  // volumen de la música (0-128)
+    Mix_VolumeMusic(32);  // volumen de la música (0-128)
     Mix_PlayMusic(musica_fondo,-1); // loop infinito
     return 1;
 }
@@ -57,4 +57,5 @@ void liberar_audio() {
 
     Mix_FreeMusic(musica_fondo);
     Mix_CloseAudio();
+
 }
