@@ -39,6 +39,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     fclose(fp);
 
     // 1. Rellenar Mapa Estático (Paredes)
+    // El mapa estatico contiene objetos que no cambiaran su estado durante el juego
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -56,6 +57,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     }
     
     // 2. Rellenar Mapa Dinámico (Juego)
+    // Este mapa contendra todos los bloques y entidades del juego
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -123,10 +125,8 @@ int main(int argc, char* args[]) {
     SDL_FreeSurface(surface8);
     SDL_FreeSurface(surface9);
 
-    // =========================//
-    // Generar nuevo mapa       //
-    // =========================//
 
+    // Generar nuevo mapa    
     generar_archivo_mapa();
 
     // =========================//
@@ -142,10 +142,13 @@ int main(int argc, char* args[]) {
     }
 
     cargar_datos_desde_archivo(&juego, mapa_est);
+
+    
     // =============================//
     //      Bucle principal         //
     // =============================//
 
+    // Ajusta las variables de los tanques
     inicializar_juego(&juego);
     int corriendo = 1;
     SDL_Event e;
@@ -232,9 +235,9 @@ int main(int argc, char* args[]) {
                             angulo2ob=270;
                             break;
 
+                        //Entradas de disparos
                         case SDLK_f:
-                            disparar(&juego, &juego.jugador1);
-                            
+                            disparar(&juego, &juego.jugador1); 
                             break;
                         case SDLK_l:
                             disparar(&juego, &juego.jugador2);
@@ -254,32 +257,38 @@ int main(int argc, char* args[]) {
         // Animación suave de rotación
         double velocidadRotacion=30; // grados por frame
 
+        // Ajusta el angulo para una rotacion mas corta
         if(angulo1ob==0 && angulo1>180)angulo1 -= 360;
         if(angulo1ob==270 && angulo1<90)angulo1 += 360;
 
+        //Rotacion Horaria
         if(angulo1<angulo1ob){
             angulo1+=velocidadRotacion;
             if(angulo1>angulo1ob)angulo1=angulo1ob;
 
+        //Rotacion AntiHoraria
         }else if(angulo1>angulo1ob){
             angulo1-=velocidadRotacion;
             if(angulo1<angulo1ob)angulo1=angulo1ob;
         }
 
+        // Ajusta el angulo para una rotacion mas corta
         if(angulo2ob==0 && angulo2>180)angulo2 -= 360;
         if(angulo2ob==270 && angulo2<90)angulo2 += 360;
 
+        //Rotacion Horaria
         if(angulo2<angulo2ob){
             angulo2+=velocidadRotacion;
             if(angulo2>angulo2ob)angulo2=angulo2ob;
 
+        //Rotacion AntiHoraria
         }else if(angulo2>angulo2ob){
             angulo2-=velocidadRotacion;
             if (angulo2<angulo2ob)angulo2=angulo2ob;
         }
 
         // -------------------------//
-        //      Dibujar mapa        //
+        //      Dibujar Menu        //
         // -------------------------//
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
@@ -320,7 +329,14 @@ int main(int argc, char* args[]) {
             remove("partida.txt");
         }
 
+        // -------------------------//
+        //      Dibujar mapa        //
+        // -------------------------//
         else {
+
+            /* Primero se lee y dibuja el mapa con bloques estaticos, posteriormente
+            se dibujan las entidades, de mode que queden por encima del mapa */
+
             //Dibuja bloques estaticos
             for(int i=0;i<filas;i++){
                 for(int j=0;j<columnas;j++){
@@ -369,6 +385,7 @@ int main(int argc, char* args[]) {
                 }
             }
 
+            // Muestra la cantidad de vidas y disparos de los tanques
             dibujar_hud(render, fuente, &juego);
 
             SDL_RenderPresent(render);
