@@ -11,66 +11,12 @@
 #include "logica.h"
 #include <ctype.h>
 #include "audio.h"
+#include "inicio.h"
 
 #define filas 13
 #define columnas 13
 #define tamano 64
 
-Mix_Chunk* snd_mover;
-Mix_Chunk* snd_disparo;
-Mix_Chunk* snd_explosion;
-Mix_Chunk* snd_vida;
-Mix_Chunk* snd_daño;
-
-Mix_Music* musica_fondo;
-
-
-int cargar_audio() {                
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        printf("Error al iniciar SDL_mixer: %s\n", Mix_GetError());
-        return 0;
-    }
-
-    snd_mover = Mix_LoadWAV("mover.wav");
-    snd_disparo = Mix_LoadWAV("disparo.wav");
-    snd_explosion = Mix_LoadWAV("explosion.wav");
-    snd_vida = Mix_LoadWAV("vida.wav");
-    snd_daño = Mix_LoadWAV("daño.wav");
-
-    if (!snd_mover || !snd_disparo || !snd_explosion || !snd_vida || !snd_daño) {
-        printf("Error cargando sonidos: %s\n", Mix_GetError());
-        return 0;
-    }
-    Mix_VolumeChunk(snd_mover, 32);       // volumen del movimiento
-    Mix_VolumeChunk(snd_disparo, 100);    // volumen del disparo
-    Mix_VolumeChunk(snd_explosion, 120);  // volumen de la explosión
-    Mix_VolumeChunk(snd_vida, 80);        // volumen de recogida de vida
-    Mix_VolumeChunk(snd_daño, 90);        // volumen del daño
-
-    srand(time(NULL));
-    int cancion = rand() % 5 + 1;
-    char archivo[50];
-    sprintf(archivo, "musica%d.mp3", cancion);
-    musica_fondo = Mix_LoadMUS(archivo);
-    if (!musica_fondo) {
-        printf("Error cargando música: %s\n", Mix_GetError());
-        return 0;
-    }
-    Mix_VolumeMusic(35);  // volumen de la música (0-128)
-    Mix_PlayMusic(musica_fondo, -1); // loop infinito
-    return 1;
-}
-
-void liberar_audio() {             
-    Mix_FreeChunk(snd_mover);
-    Mix_FreeChunk(snd_disparo);
-    Mix_FreeChunk(snd_explosion);
-    Mix_FreeChunk(snd_vida);
-    Mix_FreeChunk(snd_daño);
-
-    Mix_FreeMusic(musica_fondo);
-    Mix_CloseAudio();
-}
 
 void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     FILE *fp = fopen("mapa.txt", "r");   
@@ -83,7 +29,7 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     int valores[169];
     int contador = 0;
 
-    // Leer valores del mapa.txt
+    // Leer valores
     while ((c = fgetc(fp)) != EOF && contador < 169) {
         if (isdigit(c)){
             valores[contador] = c - '0';
@@ -93,7 +39,6 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     fclose(fp);
 
     // 1. Rellenar Mapa Estático (Paredes)
-    // (Este mapa no cambia durante el transcurso del juego) 
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -111,7 +56,6 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
     }
     
     // 2. Rellenar Mapa Dinámico (Juego)
-    // Mapa en el que se modifican los valores constantemente
     contador = 0;
     for(int i = 0; i < filas; i++){
         for(int j = 0; j < columnas; j++){
@@ -126,56 +70,21 @@ void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
 
 int main(int argc, char* args[]) {
 
-    // ===================//
-    //  Inicializar SDL   //
-    // ===================//
+    //Inicializar SDL 
+    SDL_Window *ventana;
+    SDL_Renderer *render;
+    TTF_Font *fuente;
+    TTF_Font *fuenteBoton;
 
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0){  
-        printf("Error al inicializar SDL: %s\n", SDL_GetError());
-        return EXIT_FAILURE;
-    }
-    if(SDL_Init(SDL_INIT_VIDEO)!=0){
-        printf("Error al inicializar SDL: %s\n",SDL_GetError());
-        return EXIT_FAILURE;
-    }
-    //Inicializar SDL_Image
-    if(!(IMG_Init(IMG_INIT_PNG)&IMG_INIT_PNG)){
-        printf("Error al inicializar SDL_Image: %s\n",IMG_GetError());
-        return EXIT_FAILURE;
-    }
-    //Crear ventana
-    SDL_Window *ventana=SDL_CreateWindow("Juego SDL",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,832,832+120,SDL_WINDOW_SHOWN);
-    if(ventana==NULL){
-        printf("Error al inicializar SDL_CreateWindow: %s\n",SDL_GetError);
-        return EXIT_FAILURE;
-    }   
-    //Crear render
-    SDL_Renderer *render=SDL_CreateRenderer(ventana,-1,SDL_RENDERER_ACCELERATED);
-    if(render==NULL){
-        printf("Error al inicializar SDL_CreateRenderer: %s\n",SDL_GetError);
+    if (!iniciarsdl(&ventana,&render,&fuente,&fuenteBoton)){
         return EXIT_FAILURE;
     }
 
-    //Inciailizar texto
-    if (TTF_Init() == -1) {
-        printf("Error al iniciar TTF: %s\n", TTF_GetError());
-        return 1;
-    }
-
-    TTF_Font* fuente = TTF_OpenFont("PressStart2P-Regular.ttf", 28);
-    TTF_Font* fuenteBoton = TTF_OpenFont("PressStart2P-Regular.ttf", 14);
-    if (!fuente) {
-        printf("Error cargando fuente\n");
-        return 1;
-    }
-
-
-    if (!cargar_audio()) {          
-        return EXIT_FAILURE;
+    if (!cargar_audio()){
+    return EXIT_FAILURE;
     }
 
     //Cargar imagenes
-
     SDL_Texture *imagenes[10];
 
     //Mapa
@@ -214,9 +123,10 @@ int main(int argc, char* args[]) {
     SDL_FreeSurface(surface8);
     SDL_FreeSurface(surface9);
 
+    // =========================//
+    // Generar nuevo mapa       //
+    // =========================//
 
-
-    // Generar nuevo mapa      
     generar_archivo_mapa();
 
     // =========================//
@@ -232,25 +142,20 @@ int main(int argc, char* args[]) {
     }
 
     cargar_datos_desde_archivo(&juego, mapa_est);
-
-    
     // =============================//
     //      Bucle principal         //
     // =============================//
 
-    //Se inicializan las variables de los tanques y del mapa
     inicializar_juego(&juego);
     int corriendo = 1;
     SDL_Event e;
-
-    //Angulos iniciales de los tanques
     double angulo1=0;
     double angulo1ob=0;
     double angulo2=0;
     double angulo2ob=0;
 
     Uint32 ultimo = 0;
-    Uint32 intervalo = 6000;   //6seg
+    Uint32 intervalo = 6000;   //10seg
     
     int fin = 0;
     int menu = 1;
@@ -273,8 +178,6 @@ int main(int argc, char* args[]) {
                 }
 
                 else if(!fin) {
-
-                    //Lectura de entradas
                     switch (tecla) {
 
                         //Movimientos jugador 1
@@ -329,9 +232,9 @@ int main(int argc, char* args[]) {
                             angulo2ob=270;
                             break;
 
-                        //Entrada de disparos
                         case SDLK_f:
-                            disparar(&juego, &juego.jugador1);            
+                            disparar(&juego, &juego.jugador1);
+                            
                             break;
                         case SDLK_l:
                             disparar(&juego, &juego.jugador2);
@@ -348,36 +251,28 @@ int main(int argc, char* args[]) {
                 }
             }
         }
-
-        
         // Animación suave de rotación
         double velocidadRotacion=30; // grados por frame
 
-        //Se ajusta la rotacion del tanque 1 para giros mas cortos
         if(angulo1ob==0 && angulo1>180)angulo1 -= 360;
         if(angulo1ob==270 && angulo1<90)angulo1 += 360;
 
-        //Rotacion Horaria
         if(angulo1<angulo1ob){
             angulo1+=velocidadRotacion;
             if(angulo1>angulo1ob)angulo1=angulo1ob;
 
-        //Rotacion Antihoraria
         }else if(angulo1>angulo1ob){
             angulo1-=velocidadRotacion;
             if(angulo1<angulo1ob)angulo1=angulo1ob;
         }
-        
-        //Se ajusta la rotacion del tanque 2 para giros mas cortos
+
         if(angulo2ob==0 && angulo2>180)angulo2 -= 360;
         if(angulo2ob==270 && angulo2<90)angulo2 += 360;
 
-        //Rotacion Horaria
         if(angulo2<angulo2ob){
             angulo2+=velocidadRotacion;
             if(angulo2>angulo2ob)angulo2=angulo2ob;
 
-        //Rotacion Antihoraria
         }else if(angulo2>angulo2ob){
             angulo2-=velocidadRotacion;
             if (angulo2<angulo2ob)angulo2=angulo2ob;
@@ -386,7 +281,6 @@ int main(int argc, char* args[]) {
         // -------------------------//
         //      Dibujar mapa        //
         // -------------------------//
-
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
       
@@ -427,10 +321,6 @@ int main(int argc, char* args[]) {
         }
 
         else {
-
-            /* A continuacion, se recorre primero el mapa estatico (paredes y suelo), y posteriormente
-            se dibujan las entidades, con el fin de que queden por encima del mapa */
-            
             //Dibuja bloques estaticos
             for(int i=0;i<filas;i++){
                 for(int j=0;j<columnas;j++){
@@ -479,8 +369,6 @@ int main(int argc, char* args[]) {
                 }
             }
 
-            
-            //Muestra las cantidad de vidas y disparos de los tanques
             dibujar_hud(render, fuente, &juego);
 
             SDL_RenderPresent(render);
@@ -494,7 +382,6 @@ int main(int argc, char* args[]) {
 
             actualizar_estado(&juego);
 
-            //llama a la funcion de termino del juego
             if (juego_terminado(&juego) == 1){
                 SDL_Delay(1000);
                 fin = 1; 
@@ -502,7 +389,7 @@ int main(int argc, char* args[]) {
         }
 
         SDL_RenderPresent(render);
-        SDL_Delay(66);     //Frecuencia de actualizacion cada 66ms
+        SDL_Delay(66); //Frecuencia de actualizacion cada 100ms
     }
 
     //Liberar memoria
@@ -514,11 +401,7 @@ int main(int argc, char* args[]) {
 
     free(juego.mapa);
 
-    //Cierre de ventana
-    SDL_DestroyWindow(ventana);
-    SDL_Quit();
+    cerrarsdl(ventana, render, fuente, fuenteBoton);
 
     return 0;
 }
-
-
