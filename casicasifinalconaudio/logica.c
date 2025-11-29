@@ -269,7 +269,7 @@ void disparar(Juego *juego, Tanque *t) {
     if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VACIO){
         juego->mapa[(t->fila)-1][t->columna]=BALA_ARRIBA;
     }
-    else if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==DESTRUCTIBLE){
+    else if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==DESTRUCTIBLE || t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VIDA){
         Mix_PlayChannel(-1, snd_explosion, 0);
         juego->mapa[(t->fila)-1][t->columna]=VACIO;
     }
@@ -288,7 +288,7 @@ void disparar(Juego *juego, Tanque *t) {
     else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VACIO){
         juego->mapa[t->fila][(t->columna)+1]=BALA_DERECHA;
     }
-    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==DESTRUCTIBLE){
+    else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==DESTRUCTIBLE || t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VIDA){
         Mix_PlayChannel(-1, snd_explosion, 0);
         juego->mapa[t->fila][(t->columna)+1]=VACIO;
     }
@@ -307,7 +307,7 @@ void disparar(Juego *juego, Tanque *t) {
     else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VACIO){
         juego->mapa[(t->fila)+1][t->columna]=BALA_ABAJO;
     }
-    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==DESTRUCTIBLE){
+    else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==DESTRUCTIBLE || t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VIDA){
         Mix_PlayChannel(-1, snd_explosion, 0);
         juego->mapa[(t->fila)+1][t->columna]=VACIO;
     }
@@ -326,7 +326,7 @@ void disparar(Juego *juego, Tanque *t) {
     else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==VACIO){
         juego->mapa[t->fila][(t->columna)-1]=BALA_IZQUIERDA;
     }
-    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==DESTRUCTIBLE){
+    else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==DESTRUCTIBLE || t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==VIDA){
         Mix_PlayChannel(-1, snd_explosion, 0);
         juego->mapa[t->fila][(t->columna)-1]=VACIO;
     }
