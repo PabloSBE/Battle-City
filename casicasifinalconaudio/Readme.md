@@ -7,8 +7,4 @@ Para compilar:
 
  linux: 
  
-gcc fusion.c logica.c -o juego \
-$(pkg-config --cflags --libs sdl2) \
-$(pkg-config --cflags --libs SDL2_image) \
-$(pkg-config --cflags --libs SDL2_ttf)
-
+gcc fusion.c logica.c -o juego $(pkg-config --cflags --libs sdl2) $(pkg-config --cflags --libs SDL2_image) $(pkg-config --cflags --libs SDL2_ttf) $(pkg-config --cflags --libs SDL2_mixer)

@@ -129,9 +129,9 @@ void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego) {
   else 
     sprintf(mensaje, "Jugador 1 Gana");
 
-  dibujar_texto(render, fuente, "Fin Del Juego", 290, 300);
-  dibujar_texto(render, fuente, mensaje, 280, 380);
-  dibujar_texto(render, fuente, "Presione ESC para salir", 130, 500);
+  dibujar_texto(render, fuente, "Fin Del Juego", 235, 125);
+  dibujar_texto(render, fuente, mensaje, 210, 350);
+  dibujar_texto(render, fuente, "Presione ESC para salir", 100, 455);
 }
 
 int click_boton(Boton *boton, int x, int y) {
