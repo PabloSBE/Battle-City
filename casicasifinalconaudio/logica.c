@@ -372,9 +372,9 @@ void actualizar_balas(Juego *juego) {
                     mapa_nuevo[i][j]=VACIO;
                 }
                 else if(juego->mapa[(i)-1][j]==DESTRUCTIBLE){
-                    Mix_PlayChannel(-1, snd_explosion, 0);
                     mapa_nuevo[i][j]=VACIO;
                     mapa_nuevo[(i)-1][j]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
                 }
                 else if(juego->mapa[(i)-1][j]==TANQUE1){
                     Mix_PlayChannel(-1, snd_daño, 0);
@@ -392,9 +392,9 @@ void actualizar_balas(Juego *juego) {
 		        }
 		        if(i-2>=0){
 		            if (juego->mapa[(i)-2][j]==BALA_ABAJO){
-                    Mix_PlayChannel(-1, snd_explosion, 0);
 		                mapa_nuevo[i-1][j]=VACIO;
 		                mapa_nuevo[(i)-2][j]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
 		            }
 		        }
 
@@ -411,6 +411,7 @@ void actualizar_balas(Juego *juego) {
                 else if(juego->mapa[i][j+1]==DESTRUCTIBLE){
                     mapa_nuevo[i][j]=VACIO;
                     mapa_nuevo[i][j+1]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
                 }
                 else if(juego->mapa[i][j+1]==TANQUE1){
                     Mix_PlayChannel(-1, snd_daño, 0);
@@ -429,9 +430,9 @@ void actualizar_balas(Juego *juego) {
 		
 		        if(j+2<=12){
 		          if(juego->mapa[i][j+2]==BALA_IZQUIERDA){
-                    Mix_PlayChannel(-1, snd_explosion, 0);
                     mapa_nuevo[i][j+1]=VACIO;
 		                mapa_nuevo[i][j+2]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
 		          }
 		        }
 
@@ -448,6 +449,7 @@ void actualizar_balas(Juego *juego) {
                 else if(juego->mapa[(i)+1][j]==DESTRUCTIBLE){
                     mapa_nuevo[i][j]=VACIO;
                     mapa_nuevo[(i)+1][j]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
                 }
                 else if(juego->mapa[(i)+1][j]==TANQUE1){
                     Mix_PlayChannel(-1, snd_daño, 0);
@@ -466,9 +468,9 @@ void actualizar_balas(Juego *juego) {
 		
 		        if (i+2<=12){
 		          if (juego->mapa[(i)+2][j]==BALA_ARRIBA){
-                    Mix_PlayChannel(-1, snd_explosion, 0);
                     mapa_nuevo[i+1][j]=VACIO;
 		            mapa_nuevo[(i)+2][j]=VACIO;
+                Mix_PlayChannel(-1, snd_explosion, 0);
 		            }
 		        }
 
@@ -485,6 +487,7 @@ void actualizar_balas(Juego *juego) {
                 else if(juego->mapa[i][j-1]==DESTRUCTIBLE){
                     mapa_nuevo[i][j]=VACIO;
                     mapa_nuevo[i][j-1]=VACIO;
+                    Mix_PlayChannel(-1, snd_explosion, 0);
                 }
                 else if(juego->mapa[i][j-1]==TANQUE1){
                     Mix_PlayChannel(-1, snd_daño, 0);
@@ -503,9 +506,9 @@ void actualizar_balas(Juego *juego) {
 		
 		        if(j-2>=0){
 		          if(juego->mapa[i][j-2]==BALA_DERECHA){
-                    Mix_PlayChannel(-1, snd_explosion, 0);
                     mapa_nuevo[i][j-1]=VACIO;
 		            mapa_nuevo[i][j-2]=VACIO;
+                Mix_PlayChannel(-1, snd_explosion, 0);
 		          }
 		        }
 
