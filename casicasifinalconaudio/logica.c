@@ -45,20 +45,21 @@ void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
     int hudY = 832;
     int hudH = 120;
 
+	//Rellena el fondo del hud
     SDL_Rect hudRect = {0, hudY, 832, hudH};
     SDL_SetRenderDrawColor(render, 20, 20, 20, 255);
     SDL_RenderFillRect(render, &hudRect);
 
     char texto[64];
 
-    //tanque 1
+    //Muestra las vidas y disparos del tanque 1
     sprintf(texto, "T1 Vidas: %d", juego->jugador1.vida);
     dibujar_texto(render, fuente, texto, 20, hudY + 20);
 
     sprintf(texto, "T1 Balas: %d", juego->jugador1.disparos);
     dibujar_texto(render, fuente, texto, 20, hudY + 60);
 
-    //tanque 2
+    //Muestra las vidas y disparos del tanque 2
     sprintf(texto, "T2 Vidas: %d", juego->jugador2.vida);
     dibujar_texto(render, fuente, texto, 832 - 340, hudY + 20);
 
@@ -172,9 +173,11 @@ void inicializar_juego(Juego *juego) {
 
 void vidas(Juego *juego){
 
+	//crea una posicion aleatoria
     int x = rand() % 13;
     int y = rand() % 13;
-  
+
+	//Si la zona esta vacia coloca la vida
     if(juego->mapa[x][y] != 2 && juego->mapa[x][y] != 3 && juego->mapa[x][y] != 4)
       juego->mapa[x][y] = 9;
 }
@@ -188,13 +191,14 @@ void actualizar_estado(Juego *juego) {
 // Movimiento del tanque
 int mover_tanque(Juego *juego, Tanque *t, int jugador) {
 
-    //Arriba
+    //Si la posicion esta vacia, mueve el tanque hacia Arriba
     if (t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VACIO){
         juego->mapa[t->fila][t->columna]=VACIO;
         t->fila -= 1;
         juego->mapa[t->fila][t->columna]=jugador;
         return 1;
 
+	//Si hay una vida la recoge
     }else if (t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VIDA){
         Mix_PlayChannel(-1, snd_vida, 0);
         juego->mapa[t->fila][t->columna]=VACIO;
@@ -204,13 +208,14 @@ int mover_tanque(Juego *juego, Tanque *t, int jugador) {
         return 1;
     } 
 
-    //Derecha
+    //Si la posicion esta vacia, mueve el tanque hacia la Derecha
     else if (t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VACIO){
         juego->mapa[t->fila][t->columna]=VACIO;
         t->columna += 1;
         juego->mapa[t->fila][t->columna]=jugador;
         return 1;
 
+	//Si hay una vida la recoge
     }else if (t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VIDA){
         Mix_PlayChannel(-1, snd_vida, 0);
         juego->mapa[t->fila][t->columna]=VACIO;
@@ -220,13 +225,14 @@ int mover_tanque(Juego *juego, Tanque *t, int jugador) {
         return 1;
     }
 
-    //Abajo
+    //Si la posicion esta vacia, mueve el tanque hacia Abajo
     else if (t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VACIO){
         juego->mapa[t->fila][t->columna]=VACIO;
         t->fila += 1;
         juego->mapa[t->fila][t->columna]=jugador;
         return 1;
 
+	//Si hay una vida la recoge
     }else if (t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VIDA){
         Mix_PlayChannel(-1, snd_vida, 0);
         juego->mapa[t->fila][t->columna]=VACIO;
@@ -236,13 +242,14 @@ int mover_tanque(Juego *juego, Tanque *t, int jugador) {
         return 1;
     }
 
-    //Izquierda
+    //Si la posicion esta vacia, mueve el tanque hacia la Izquierda
     else if (t->direccion==3  && juego->mapa[t->fila][(t->columna)-1]==VACIO){
         juego->mapa[t->fila][t->columna]=VACIO;
         t->columna -= 1;
         juego->mapa[t->fila][t->columna]=jugador;
         return 1;
 
+	//Si hay una vida la recoge
     }else if (t->direccion==3  && juego->mapa[t->fila][(t->columna)-1]==VIDA){
         Mix_PlayChannel(-1, snd_vida, 0);
         juego->mapa[t->fila][t->columna]=VACIO;
@@ -258,14 +265,16 @@ int mover_tanque(Juego *juego, Tanque *t, int jugador) {
 
 }
 
-// Crea bala desde la posición del tanque
+/* Funcion que genera una bala en la direccion que este apuntando el tanque, la bala queda ubicada una posicion delante
+del tanque. Se anaden varias condiciones en caso de que enfrente del tanque haya un bloque u objeto */
 void disparar(Juego *juego, Tanque *t) {
 
+	//anade un disparo al contador
     t->disparos+=1;
 
-
     Mix_PlayChannel(-1, snd_disparo, 0);
-    //disparo hacia arriba
+	
+    //Disparo hacia arriba
     if(t->direccion==0 && juego->mapa[(t->fila)-1][t->columna]==VACIO){
         juego->mapa[(t->fila)-1][t->columna]=BALA_ARRIBA;
     }
@@ -284,7 +293,7 @@ void disparar(Juego *juego, Tanque *t) {
         juego->jugador2.vida-=1;
     }
 
-    //disparo hacia la derecha
+    //Disparo hacia la derecha
     else if(t->direccion==1 && juego->mapa[t->fila][(t->columna)+1]==VACIO){
         juego->mapa[t->fila][(t->columna)+1]=BALA_DERECHA;
     }
@@ -303,7 +312,7 @@ void disparar(Juego *juego, Tanque *t) {
         juego->jugador2.vida-=1;
     }
 
-    //disparo hacia abajo
+    //Disparo hacia abajo
     else if(t->direccion==2 && juego->mapa[(t->fila)+1][t->columna]==VACIO){
         juego->mapa[(t->fila)+1][t->columna]=BALA_ABAJO;
     }
@@ -322,7 +331,7 @@ void disparar(Juego *juego, Tanque *t) {
         juego->jugador2.vida-=1;
     }
 
-    //disparo hacia la izquierda
+    //Disparo hacia la izquierda
     else if(t->direccion==3 && juego->mapa[t->fila][(t->columna)-1]==VACIO){
         juego->mapa[t->fila][(t->columna)-1]=BALA_IZQUIERDA;
     }
@@ -347,22 +356,30 @@ void disparar(Juego *juego, Tanque *t) {
 
 }
 
-// Actualiza posición de balas e interacciones
+/* Funcion encargada de actualizar la posicion de las balas. Primero lee el mapa para encontrar las balas generadas,
+una vez obtenida las coordenadas, la funcion mueve una posicion la bala hasta que esta se encuentre con algun objeto. */
 void actualizar_balas(Juego *juego) {
 
     int mapa_nuevo[ALTO][ANCHO];
 
-    //Copia el mapa
+    //Crea un nuevo mapa que contendra la posicion actualizada de las balas
     for(int i = 0; i < ALTO; i++) {
         for(int j = 0; j < ANCHO; j++) {
             mapa_nuevo[i][j] = juego->mapa[i][j];
         }
     }
 
+	//Ciclo para buscar las balas
     for(int i = 0; i < ALTO; i++) {
         for(int j = 0; j < ANCHO; j++) {
 
-            //Colision ante cada tipo de elemento
+			/* Mueve las balas una posicion.
+			En caso de haber un bloque destruible adyacente, este se destruira junto con la bala.
+			En caso de haber un bloque indestructible adyacente, la bala se destruira.
+			En caso de haber un tanque adyacente, a este se le restara una vida
+			Esto se aplica a cada direccion de la bala*/
+			
+			// Interacciones Bala arriba
             if(juego->mapa[i][j]==BALA_ARRIBA){
                 if(juego->mapa[(i)-1][j]==VACIO){
                     mapa_nuevo[i][j]=VACIO;
@@ -400,6 +417,7 @@ void actualizar_balas(Juego *juego) {
 
             }
 
+			// Interacciones Bala derecha
             if(juego->mapa[i][j]==BALA_DERECHA){
                 if(juego->mapa[i][j+1]==VACIO){
                     mapa_nuevo[i][j]=VACIO;
@@ -437,7 +455,8 @@ void actualizar_balas(Juego *juego) {
 		        }
 
             } 
-             
+
+			// Interacciones Bala abajo
             if(juego->mapa[i][j]==BALA_ABAJO){
                 if(juego->mapa[(i)+1][j]==VACIO){
                     mapa_nuevo[i][j]=VACIO;
@@ -476,6 +495,7 @@ void actualizar_balas(Juego *juego) {
 
             }
 
+			// Interacciones Bala Izquierda
             if(juego->mapa[i][j]==BALA_IZQUIERDA){
                 if(juego->mapa[i][j-1]==VACIO){
                     mapa_nuevo[i][j]=VACIO;
@@ -516,6 +536,7 @@ void actualizar_balas(Juego *juego) {
         }
     }
 
+	//Copia la nueva posicion de las balas al mapa orignial
     for(int i = 0; i < ALTO; i++) {
         for(int j = 0; j < ANCHO; j++) {
             juego->mapa[i][j] = mapa_nuevo[i][j];
@@ -524,12 +545,12 @@ void actualizar_balas(Juego *juego) {
 }
 
 
-// Retorna 1 si alguien ganó 
+// Retorna 1 si algun jugador se queda sin vidas, retorna 0 en caso contrario
 int juego_terminado(Juego *juego) {
 
+	
     if(juego->jugador1.vida<=0){
         return 1;
-
     }
 
     if(juego->jugador2.vida<=0){
