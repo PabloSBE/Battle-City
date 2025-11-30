@@ -17,9 +17,12 @@
 #define columnas 13
 #define tamano 64
 
-
+// Cargar mapa desde el archivo
 void cargar_datos_desde_archivo(Juego *juego, int mapa_est[filas][columnas]) {
-    FILE *fp = fopen("mapa.txt", "r");   
+    // Abrir archivo el cual contiene el mapa
+    FILE *fp = fopen("mapa.txt", "r");
+
+    // En caso que no se haya podido abrir el archvio   
     if (fp == NULL) {
         printf("Error al abrir el archivo mapa.txt\n");
         return;
@@ -103,6 +106,7 @@ int main(int argc, char* args[]) {
     SDL_Surface *surface8=IMG_Load("balaleft.png");
     SDL_Surface *surface9=IMG_Load("vida.png");
 
+    // Convertimos las superficies en texturas
     imagenes[0]=SDL_CreateTextureFromSurface(render,surface0);
     imagenes[1]=SDL_CreateTextureFromSurface(render,surface1);
     imagenes[2]=SDL_CreateTextureFromSurface(render,surface2);
@@ -114,6 +118,7 @@ int main(int argc, char* args[]) {
     imagenes[8]=SDL_CreateTextureFromSurface(render,surface8);
     imagenes[9]=SDL_CreateTextureFromSurface(render,surface9);
 
+    // Liberamos la memoria de las superficies
     SDL_FreeSurface(surface0);
     SDL_FreeSurface(surface1);
     SDL_FreeSurface(surface2);
@@ -416,6 +421,7 @@ int main(int argc, char* args[]) {
 
     liberar_audio();     
 
+    // Liberar memoria del mapa
     free(juego.mapa);
 
     cerrarsdl(ventana, render, fuente, fuenteBoton);

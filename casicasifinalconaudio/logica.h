@@ -19,39 +19,44 @@
 #define BALA_IZQUIERDA 8
 #define VIDA 9  
 
+// Definir estructura de un boton
 typedef struct {
-    SDL_Rect rect;
-    SDL_Color color;
-    char texto[50];
+    SDL_Rect rect; // Tamano del boton
+    SDL_Color color; // Color del boton
+    char texto[50]; // Mensaje del boton
 } Boton;
 
+// Definir estructura de un tanque
 typedef struct {
-    int fila, columna;
-    int vida;
+    int fila, columna; // Fila y columna en que se encuentra el tanque
+    int vida; // Cantidad de vidas del tanque
     int disparos;
     int direccion;   // 0=arriba, 1=derecha, 2=abajo, 3=izquierda
 } Tanque;
 
+// Definir estructura del juego
 typedef struct {
-    int **mapa;
-    Tanque jugador1;
-    Tanque jugador2;
+    int **mapa; // Mapa del juego
+    Tanque jugador1; // Tanque cual representa al jugador 1
+    Tanque jugador2; // Tanque cual representa al jugador 2
 } Juego;
 
 /* ----- Manejo general ----- */
 void inicializar_juego(Juego *juego);
 
+
+int click_boton(Boton *boton, int x, int y);
+
+void vidas(Juego *juego);
+void actualizar_estado(Juego *juego);
+
+/* ----- Renderizado ----- */
 void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y);
 void dibujar_boton(SDL_Renderer *render, TTF_Font *fuente, Boton *boton);
 
 void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego);
 int dibujar_menu(SDL_Renderer *render, TTF_Font *fuente, TTF_Font *fuenteBoton, Juego *juego);
 void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego);
-
-int click_boton(Boton *boton, int x, int y);
-
-void vidas(Juego *juego);
-void actualizar_estado(Juego *juego);
 
 /* ----- Movimientos ----- */
 int mover_tanque(Juego *juego, Tanque *t, int jugador);

@@ -5,6 +5,10 @@
 #include <math.h>
 #include "audio.h"
 
+#define LARGO 13
+#define ANCHO 13
+
+// Dibujar textos
 void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y){
 
     SDL_Color blanco = {255, 255, 255};
@@ -19,33 +23,34 @@ void dibujar_texto(SDL_Renderer* r, TTF_Font* f, const char* msg, int x, int y){
     SDL_DestroyTexture(t);
 }
 
+// Dibujar botones
 void dibujar_boton(SDL_Renderer *render, TTF_Font *fuente, Boton *boton) {
-    // 1. Dibujar el rectángulo del fondo
+    // Generar el rectangulo del boton
     SDL_SetRenderDrawColor(render, boton->color.r, boton->color.g, boton->color.b, boton->color.a);
     SDL_RenderFillRect(render, &boton->rect);
 
-    // 2. Dibujar el borde (opcional, para que se vea mejor)
+    // Generar el borde del boton
     SDL_SetRenderDrawColor(render, 255, 255, 255, 255); // Borde blanco
     SDL_RenderDrawRect(render, &boton->rect);
 
-    // 3. Calcular posición para centrar el texto
+    // Posicionar el texto en el boton
     int texto_w, texto_h;
     TTF_SizeText(fuente, boton->texto, &texto_w, &texto_h);
     
     int texto_x = boton->rect.x + (boton->rect.w - texto_w) / 2;
     int texto_y = boton->rect.y + (boton->rect.h - texto_h) / 2;
 
-    // 4. Usar tu función existente para dibujar el texto encima
-    // Nota: Necesitas modificar ligeramente tu dibujar_texto o usar esta lógica directa:
+    // Utilizar la funcion dibujar_texto para colocar el texto en el boton
     dibujar_texto(render, fuente, boton->texto, texto_x, texto_y);
 }
 
+// Dibujar hud
 void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
 
     int hudY = 832;
     int hudH = 120;
 
-	//Rellena el fondo del hud
+	  //Rellena el fondo del hud
     SDL_Rect hudRect = {0, hudY, 832, hudH};
     SDL_SetRenderDrawColor(render, 20, 20, 20, 255);
     SDL_RenderFillRect(render, &hudRect);
@@ -67,39 +72,51 @@ void dibujar_hud(SDL_Renderer *render, TTF_Font *fuente, Juego *juego){
     dibujar_texto(render, fuente, texto, 832 - 340, hudY + 60);
 }
 
+// Dibujar menu de inicio
 int dibujar_menu(SDL_Renderer *render, TTF_Font *fuente, TTF_Font *fuenteBoton, Juego *juego) {
   SDL_Event e;
 
+  // Crear el boton de iniciar nueva partida con sus caracteristicas
   Boton btnNuevo;
-  btnNuevo.rect = (SDL_Rect) {290, 225, 250, 75};
+  btnNuevo.rect = (SDL_Rect) {290, 225, 250, 75}; 
   btnNuevo.color = (SDL_Color) {0, 150, 0, 255};
   sprintf(btnNuevo.texto, "Nueva Partida");
 
+  // Crear el boton de cargar partida con sus caracteristicas
   Boton btnCargar;
   btnCargar.rect = (SDL_Rect) {290, 350, 250, 75};
   btnCargar.color = (SDL_Color) {0, 0, 150, 255};
   sprintf(btnCargar.texto, "Cargar Partida");
 
+  // Crear el boton de salir con sus caracteristicas
   Boton btnSalir;
   btnSalir.rect = (SDL_Rect) {290, 475, 250, 75};
   btnSalir.color = (SDL_Color) {150, 0, 0, 255};
   sprintf(btnSalir.texto, "Salir");
 
+  // El programa queda en un bucle hasta que el usuario eliga alguna opcion
   while(1) {
       while(SDL_PollEvent(&e)) {
+
+        // Detectar click
         if(e.type == SDL_MOUSEBUTTONDOWN) {
+          // Detectar solo click izquierda
           if(e.button.button == SDL_BUTTON_LEFT) {
-            int x = e.button.x;
+            // Obtener coordenadas x, y del mouse
+            int x = e.button.x; 
             int y = e.button.y;
 
+            // Verificar si el click ocurrio en las coordenadas del boton de nueva partida
             if(click_boton(&btnNuevo, x, y)) {
               return 1;
             }
-            
+
+            // Verificar si el click ocurrio en las coordenadas del boton de cargar
             if(click_boton(&btnCargar, x, y)) {
               return 2; 
             }
 
+            // Verificar si el click ocurrio en las coordenadas del boton de sakur
             if(click_boton(&btnSalir, x, y)) {
               return 0;
             }
@@ -107,35 +124,48 @@ int dibujar_menu(SDL_Renderer *render, TTF_Font *fuente, TTF_Font *fuenteBoton, 
         }
       }
 
+    // Renderizar un fondo negro
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderClear(render);
     
+    // Renderizar el texto "Battle City"
     dibujar_texto(render, fuente, "Battle City", 270, 100);
 
+    // Renderizar los botones con sus respectivas fuentes
     dibujar_boton(render, fuenteBoton, &btnNuevo);
     dibujar_boton(render, fuenteBoton, &btnCargar);
     dibujar_boton(render, fuenteBoton, &btnSalir);
 
+    // Actualizar la ventana
     SDL_RenderPresent(render);
   }
 }
+
+// Dibujar pantalla de fin
 void dibujar_fin(SDL_Renderer *render, TTF_Font *fuente, Juego *juego) {
+  // Renderizar un fondo negro
   SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
   SDL_RenderClear(render);
 
-  char mensaje[50];
+  // Mensaje de maximo 50 caracteres
+  char mensaje[30];
 
+  // Dependiendo de que jugador gana, el mensaje es uno otro
   if(juego->jugador1.vida <= 0)
     sprintf(mensaje, "Jugador 2 Gana");
   else 
     sprintf(mensaje, "Jugador 1 Gana");
 
+  // Renderizar los textos de la pantalla de fin
   dibujar_texto(render, fuente, "Fin Del Juego", 235, 125);
   dibujar_texto(render, fuente, mensaje, 210, 350);
   dibujar_texto(render, fuente, "Presione ESC para salir", 100, 455);
 }
 
+// Verificacion coordenadas de boton
 int click_boton(Boton *boton, int x, int y) {
+  // Verificar que el click se haya hecho dentro del boton
+  // Se verifica que las coordenadas del click esten dentro de las coordenadas del boton
   if(x >= boton->rect.x && x <= (boton->rect.x + boton->rect.w) && y >= boton->rect.y && y <= (boton->rect.y + boton->rect.h)) {
       return 1;
   }
@@ -560,10 +590,9 @@ int juego_terminado(Juego *juego) {
     return 0;
 }
 
-#define LARGO 13
-#define ANCHO 13
-
+// Funcion encargada de liberar la memoria que ocupa el mapa
 void liberar_memoria(int **mapa) {
+  // Se verifica que haya un mapa
   if(mapa == NULL)
     return;
 
@@ -572,38 +601,50 @@ void liberar_memoria(int **mapa) {
     free(mapa[i]);
   }
 
+  // Se libera meoria de cada columna
   free(mapa);
 }
 
+// Funcion que implementa el algoritmo DFS
 void dfs(int x, int y, int **mapa, int visitado[ANCHO][LARGO]) {
+
+  // Evitar errores en caso que se salga de los limites del mapa
   if(x < 0 || x >= ANCHO || y < 0 || y >= LARGO)
     return;
 
+  // Verificar que se haya verificado esta celda de manera anterior
   if(visitado[x][y])
     return;
 
+  // Verificar que sea un bloque indestructible
   if(mapa[x][y] == 2)
     return;
 
+  // Si la celda no ha sido visitada y no es indestructible, se marca como visitada
   visitado[x][y] = 1;
 
+  // Se verifica lo mismo pero con las celdas adyacentes a este
   dfs(x + 1, y, mapa, visitado);
   dfs(x - 1, y, mapa, visitado);
   dfs(x, y + 1, mapa, visitado);
   dfs(x, y - 1, mapa, visitado);
 }
 
+// Esta funcion verifica que el mapa generado sea accesible por los jugadores
 int conectados(int **mapa) {
+  // Matriz para llevar el registro de las celdas visitadas
   int visitado[ANCHO][LARGO] = {0};
 
   int x = -1, y = -1;
 
+  // Empezamos en la primera celda que no sea indestructible
   for(int i = 1; i < ANCHO - 1; i++) {
+    // El bucle se termina hasta que se encuentre la primera celda libre
     for(int j = 1; j < LARGO - 1; j++) {
       if(mapa[i][j] != 2) {
         x = i;
         y = j;
-        break;
+        break; 
       }
     }
 
@@ -611,11 +652,13 @@ int conectados(int **mapa) {
       break;
   }
 
+  // Verifica la validez del mapa
   if(x == -1)
     return 0;
 
   dfs(x, y, mapa, visitado);
 
+  // Se recorre todo el mapa para verificar la existencia de celdas que no se puedan recorrer
   for(int i = 1; i < ANCHO - 1; i++) {
     for(int j = 1; j < LARGO - 1; j++) {
       if(mapa[i][j] != 2 && !visitado[i][j]) {
@@ -627,19 +670,24 @@ int conectados(int **mapa) {
   return 1;
 }
 
+// Funcion encargada de generar la estructura basica de un mapa (Filas, Columnas)
 int** generar_mapa() {
   srand(time(NULL));
 
+  // Reservar las filas del mapa
   int **mapa = (int**)malloc(ANCHO * sizeof(int*));
 
+  // Verificar que se haya reservado de manera correcta la memoria dinamica
   if(mapa == NULL) {
-    printf("No se ha podido asignar memoria para las filas del mapa \n");
+    // printf("No se ha podido asignar memoria para las filas del mapa \n");
     return NULL;
   }
 
+  // Reservar las columnas del mapa
   for(int i = 0; i < ANCHO; i++) {
     mapa[i] = (int*)malloc(LARGO * sizeof(int));
 
+    // Verificar que se haya reservado de manera correcta las columnas del mapa
     if(mapa[i] == NULL) {
       printf("No se ha podido asignar memoria para las columnas del mapa \n");
       return NULL;
@@ -655,6 +703,7 @@ int** generar_mapa() {
   // Generamos un mapa vacio (celdas 0) y con un borde indestructible (celdas 2) 
   for(int i = 0; i < ANCHO; i++) {
     for(int j = 0; j < LARGO; j++) {
+      // Verificar que estamos las celdas en el borde del mapa
       if(i == 0 || i == ANCHO - 1|| j == 0 || j == LARGO - 1) { 
         mapa[i][j] = 2;
       }
@@ -664,15 +713,18 @@ int** generar_mapa() {
     }
   }
     
+  // Generar de manera aleatoria los obstaculos, ignorando las celdas que estan en los bordes
   for(int i = 1; i < LARGO - 1; i++) {
     for(int j = 1; j < ANCHO - 1; j++) {
+      // Generar un numero aleatorio entre 1 - 10
       int probabilidad = (rand() % (10 - 1 + 1) + 1);
 
-
+      // 20% de que se genere un bloque indestructible
       if(probabilidad > 6 && probabilidad <= 8) {
         mapa[i][j] = 2;
       }
 
+      // 20% de que se genere un bloque destructible
       else if(probabilidad > 8) {
         mapa[i][j] = 1;
       }
@@ -682,29 +734,39 @@ int** generar_mapa() {
   return mapa;
 }
 
+// Funcion encargada de colocar la posicion de los tanques en el mapa
 void colocar_tanques(int **mapa) {
+  // Se inicializan las coordenadas de cada tanque
   int tanque1_x, tanque1_y, tanque2_x, tanque2_y;
 
+  // Hasta que el tanque1 no tenga coordenadas, el bucle se va a ejectuar indefinidamente
   while(1) {
-    tanque1_x = (rand() % (12 - 1 + 1) + 1);
+    // Se generan las coordenadas del tanque1 de manera aleatoria
+    tanque1_x = (rand() % (12 - 1 + 1) + 1); 
     tanque1_y = (rand() % (12 - 1 + 1) + 1);
 
+    // Se verifica que las coordenadas generadas no tenga un bloque indestructible
     if(mapa[tanque1_x][tanque1_y] != 2){
-      mapa[tanque1_x][tanque1_y] = 3;
+      mapa[tanque1_x][tanque1_y] = 3; // Se genera el tanque 1
       break;
     }
   }
 
+  // Hasta que el tanque1 no tenga coordenadas, el bucle se va a ejectuar indefinidamente
   while(1) {
+    // Se generan las coordenadas del tanque2 de manera aleatoria
     tanque2_x = (rand() % (12 - 1 + 1) + 1);
     tanque2_y = (rand() % (12 - 1 + 1) + 1);
 
+    // Se verifica que las coordenadas generadas no tenga un bloque indestructible
+    // Y que no se encuentre a menos de 7 bloques del otro tanque
     if(mapa[tanque2_x][tanque2_y] != 2 && (abs(tanque2_x - tanque1_x) + abs(tanque2_y - tanque1_y)) >= 7){
-      mapa[tanque2_x][tanque2_y] = 4;
+      mapa[tanque2_x][tanque2_y] = 4; // Se genera el tanque 2
       break;
     }
   }
 }
+
 
 void generar_archivo_mapa() {
 
@@ -713,24 +775,32 @@ void generar_archivo_mapa() {
 
   FILE *fp;
 
+  // Este bucle se repite de forma indefinida hasta que se genere un mapa el cual no tenga zonas cerrdas
+  // Las cuales el jugador no puede alcanzar.
+  // En caso que se gener un mapa invalido, se descarta y se genera otro
   do {
+    // Se libera de memoria mapa, en caso que se haya generado un mapa invalido anteriormente
     if(cantidad_mapas == 1)
       liberar_memoria(mapa);
 
+    // Se genera la estructura basica del mapa
     mapa = generar_mapa();
-    cantidad_mapas = 1;
+    cantidad_mapas = 1; // Se marca que ya se asigno memoria al mapa
 
+    // Verificacion en caso que la asignacion de memoria dinamica haya fallado
     if(mapa == NULL) {
       return;
     }
 
+    // Verificamos que todas las celdas del mapa sean accesibles
     if(conectados(mapa)) {
-      colocar_tanques(mapa);
+      colocar_tanques(mapa); // Se generan los tanques en el mapa
       break;
     }
 
   } while(1); 
 
+  /*
   for(int i = 0; i < LARGO; i++) {
     for(int j = 0; j < ANCHO; j++) {
       printf("%d ", mapa[i][j]);
@@ -738,14 +808,18 @@ void generar_archivo_mapa() {
 
     printf("\n");
   }
+  */
 
+  // Abrimos el archivo mapa.txt
   fp = fopen("mapa.txt", "w");
 
+  // Verificamos que el archivo se haya abierto de manera correcta
   if(fp == NULL) {
     printf("Ha habido un problema al abrir el archivo");
     return;
   }
 
+  // Guardamos el mapa en el archivo mapa.txt
   for(int i = 0; i < LARGO; i++) {
     for(int j = 0; j < ANCHO; j++) {
       fprintf(fp, "%d ", mapa[i][j]);
@@ -754,20 +828,25 @@ void generar_archivo_mapa() {
     fprintf(fp, "\n");
   }
 
+  // Cerramos el archivo
   fclose(fp);
-  liberar_memoria(mapa);
+  liberar_memoria(mapa); // Liberamos la memoria ram que estaba utilizando el mapa
 }
 
+// Funcion encargada de guardar el mapa de un partida ya en curso (Guardar partida)
 void generar_guardado_mapa(int **mapa) {
   FILE *fp;
 
+  // Se abre el archivo partida.txt donde se va a guardar el mapa
   fp = fopen("partida.txt", "w");
 
+  // Se verifica que el archivo se haya abierto de forma correcta
   if(fp == NULL) {
     printf("Ha habido nu problema al guardar el mapa");
     return;
   }
 
+  // Se guarda cada elemento del mapa en el archivo
   for(int i = 0; i < LARGO; i++) {
     for(int j = 0; j < ANCHO; j++) {
       fprintf(fp, "%d ", mapa[i][j]);
@@ -776,5 +855,6 @@ void generar_guardado_mapa(int **mapa) {
     fprintf(fp, "\n");
   }
 
+  // Se cierra el archivo
   fclose(fp);
 }
